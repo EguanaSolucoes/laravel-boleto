@@ -165,12 +165,12 @@ class CalculoDV
 			}else{
 				$dv1++;
 			}
-			
-			$dv2 = Util::modulo11($campo . $dv1, 2, 7, 0, 10);				
+
+			$dv2 = Util::modulo11($campo . $dv1, 2, 7, 0, 10);
 		}elseif($dv2 != 0){
 			$dv2 = (11 - $dv2);
 		}
-			
+
 		return $dv1 . $dv2;
     }
 
@@ -206,7 +206,7 @@ class CalculoDV
         $dv = Util::modulo11($agencia, 2, 9, 0, 'P');
         return $dv == 11 ? 0 : $dv;
     }
-    
+
     public static function bradescoContaCorrente($contaCorrente)
     {
         return Util::modulo11($contaCorrente, 2, 9, 0, 'P');
@@ -215,6 +215,17 @@ class CalculoDV
     public static function bradescoNossoNumero($carteira, $nossoNumero)
     {
         return Util::modulo11($carteira . Util::numberFormatGeral($nossoNumero, 11), 2, 7, 0, 'P');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 237 - Citibank
+    |--------------------------------------------------------------------------
+    */
+    public static function citibankNossoNumero($nossoNumero)
+    {
+        return Util::modulo11($nossoNumero);
     }
 
     /*
