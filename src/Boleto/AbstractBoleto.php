@@ -1205,7 +1205,7 @@ abstract class AbstractBoleto implements BoletoContract
      */
     public function getLogo()
     {
-        return $this->logo ? $this->logo : "http://dummyimage.com/300x70/f5/0.png&text=Sem+Logo";
+        return $this->logo ? $this->logo : false;
     }
 
     /**
@@ -1215,8 +1215,14 @@ abstract class AbstractBoleto implements BoletoContract
      */
     public function getLogoBase64()
     {
-        return 'data:image/' . pathinfo($this->getLogo(), PATHINFO_EXTENSION) .
-            ';base64,' . base64_encode(file_get_contents($this->getLogo()));
+        $logo = false;
+
+        if ($this->getLogo()) {
+            $logo = 'data:image/' . pathinfo($this->getLogo(), PATHINFO_EXTENSION) .
+                ';base64,' . base64_encode(file_get_contents($this->getLogo()));
+        }
+
+        return $logo;
     }
 
     /**
