@@ -229,7 +229,7 @@ class Citibank  extends AbstractBoleto implements BoletoContract
         $codigo = $this->getCodigoBarras();
         $contaCosmos = $this->getCodigoCliente();
 
-        $s1 = substr($codigo, 0, 4) . "3" . $this->carteira . substr($contaCosmos, 0, 1);
+        $s1 = substr($codigo, 0, 4) . "3" . $this->carteira . substr($contaCosmos, 1, 1);
         $s1 = $s1 . Util::modulo10($s1);
         $s1 = substr_replace($s1, '.', 5, 0);
 
