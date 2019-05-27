@@ -85,11 +85,23 @@ class Citibank extends AbstractRemessa implements RemessaContract
     /**
      * @param mixed $convenio
      *
-     * @return Bb
+     * @return convenio
      */
     public function setConvenio($convenio)
     {
         $this->convenio = ltrim($convenio, 0);
+
+        return $this;
+    }
+
+    public function getCarteira()
+    {
+        return $this->carteira;
+    }
+
+    public function setCarteira($carteira)
+    {
+        $this->carteira = $carteira;
 
         return $this;
     }
@@ -153,7 +165,7 @@ class Citibank extends AbstractRemessa implements RemessaContract
         }
         $this->add(18, 22, Util::formatCnab('9', '0', 5));
         $this->add(23, 23, '0');
-        $this->add(24, 35, Util::formatCnab('9', '0', 12));
+        $this->add(24, 35, '000000000000');
         $this->add(36, 36,'0');
         $this->add(37, 37, '0');
         $this->add(38, 57, Util::formatCnab('9', $boleto->getNossoNumero(), 20));
@@ -163,14 +175,14 @@ class Citibank extends AbstractRemessa implements RemessaContract
         $this->add(61, 61, '2');
         $this->add(62, 62, '2');
         $this->add(63, 72, Util::formatCnab('9', $boleto->getNumeroDocumento(), 10));
-        $this->add(73, 77, Util::formatCnab('9',   '', 5));
+        $this->add(73, 77, '');
         $this->add(78, 85, $boleto->getDataVencimento()->format('dmY'));
-        $this->add(86, 87, Util::formatCnab('9', 0, 2));
+        $this->add(86, 87,'00');
         $this->add(88, 100, Util::formatCnab('9', $boleto->getValor(), 13, 2));
         $this->add(101, 105, '00000');
         $this->add(106, 106, '0');
         $this->add(107, 108, Util::formatCnab('9', $boleto->getEspecieDocCodigo(), 2));
-        $this->add(109, 109, Util::formatCnab('9', $boleto->getAceite() == 'N' ? 'N' : 'A', 1));    //N = Não Aceita     A = Aceite
+        $this->add(109, 109, Util::formatCnab('X', $boleto->getAceite() == 'N' ? 'N' : 'A', 1));    //N = Não Aceita     A = Aceite
         $this->add(110, 117, $boleto->getDataDocumento()->format('dmY'));
         $this->add(118, 118, ($boleto->getJuros() !== null && $boleto->getJuros() > 0) ? '2' : '0');    //0 = ISENTO | 1 = R$ ao dia | 2 = % ao mês
         $this->add(119, 126, $boleto->getDataVencimento()->format('dmY'));
@@ -238,11 +250,11 @@ class Citibank extends AbstractRemessa implements RemessaContract
         $this->add(221, 232,'');
         $this->add(233, 240,'');
 
-        if($boleto->getSacadorAvalista()) {
-            $this->add(154, 154, strlen(Util::onlyNumbers($boleto->getSacadorAvalista()->getDocumento())) == 14 ? 2 : 1);
-            $this->add(155, 169, Util::formatCnab('9', Util::onlyNumbers($boleto->getSacadorAvalista()->getDocumento()), 15));
-            $this->add(170, 209, Util::formatCnab('X', $boleto->getSacadorAvalista()->getNome(), 40));
-        }
+//        if($boleto->getSacadorAvalista()) {
+//            $this->add(154, 154, strlen(Util::onlyNumbers($boleto->getSacadorAvalista()->getDocumento())) == 14 ? 2 : 1);
+//            $this->add(155, 169, Util::formatCnab('9', Util::onlyNumbers($boleto->getSacadorAvalista()->getDocumento()), 15));
+//            $this->add(170, 209, Util::formatCnab('X', $boleto->getSacadorAvalista()->getNome(), 40));
+//        }
 
         return $this;
     }
@@ -271,20 +283,23 @@ class Citibank extends AbstractRemessa implements RemessaContract
         }
         $this->add(18, 18, '0');
         $this->add(19, 26, '00000000');
-        $this->add(27, 41, '000000000000000');
+        $this->add(27, 28, '00');
+        $this->add(29, 41, Util::formatCnab('9', '', 13, 2));
         $this->add(42, 42, '0');
-        $this->add(43, 50, '00000000');
-        $this->add(51, 65, '000000000000000');
+        $this->add(43, 50, Util::formatCnab('9', '0', 13, 2));
+        $this->add(51, 52, '00');
+        $this->add(53, 65, Util::formatCnab('9', '0', 13, 2));
         $this->add(66, 66, $boleto->getMulta() > 0 ? '2' : '0'); //0 = ISENTO | 1 = VALOR FIXO | 2 = PERCENTUAL
         $this->add(67, 74, $boleto->getDataVencimento()->format('dmY'));
-        $this->add(75, 89, Util::formatCnab('9', $boleto->getMulta(), 15, 2));  //2,20 = 0000000000220
+        $this->add(75, 76, '00');
+        $this->add(77, 89, Util::formatCnab('9', $boleto->getMulta(), 13, 2));  //2,20 = 0000000000220
         $this->add(90, 199, '');
         $this->add(200, 207, '00000000');
         $this->add(208, 210, '000');
         $this->add(211, 215, '00000');
-        $this->add(216, 216, '');
+        $this->add(216, 216, '0');
         $this->add(217, 228, '000000000000');
-        $this->add(229, 230, '');
+        $this->add(229, 230, '0');
         $this->add(231, 231, '0');
         $this->add(232, 240, '');
 
