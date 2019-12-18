@@ -57,6 +57,14 @@ abstract class AbstractBoleto implements BoletoContract
      * @var float
      */
     protected $desconto;
+
+    /**
+     * Valor cobrado considerand o desconto
+     * 
+     * @var float
+     */
+    protected $valorCobranca;
+
     /**
      * Valor para multa
      *
@@ -1042,6 +1050,27 @@ abstract class AbstractBoleto implements BoletoContract
     }
 
     /**
+     * Define o valor a ser cobrado considerado o desconto
+     * 
+     * @return AbstractBoleto
+     */
+    public function setValorCobranca()
+    {
+        $this->valorCobranca = $this->valor - $this->desconto;
+        return $this;
+    }
+
+    /**
+     * Retorna o valor de cobrança
+     * 
+     * @return float
+     */
+    public function getValorCobranca()
+    {
+        return Util::nFloat($this->valorCobranca, 2, false);
+    }
+
+    /**
      * Seta a % de multa
      *
      * @param  float $multa
@@ -1572,6 +1601,7 @@ abstract class AbstractBoleto implements BoletoContract
                 'data_desconto' => $this->getDataDesconto(),
                 'valor' => Util::nReal($this->getValor(), 2, false),
                 'desconto' => Util::nReal($this->getDesconto(), 2, false),
+                'valor_cobranca' => Util::nReal($this->getValorCobranca(), 2, false),
                 'multa' => Util::nReal($this->getMulta(), 2, false),
                 'juros' => Util::nReal($this->getJuros(), 2, false),
                 'juros_apos' => $this->getJurosApos(),
@@ -1579,16 +1609,16 @@ abstract class AbstractBoleto implements BoletoContract
                 'sacador_avalista' =>
                     $this->getSacadorAvalista()
                         ? [
-                        'nome' => $this->getSacadorAvalista()->getNome(),
-                        'endereco' => $this->getSacadorAvalista()->getEndereco(),
-                        'bairro' => $this->getSacadorAvalista()->getBairro(),
-                        'cep' => $this->getSacadorAvalista()->getCep(),
-                        'uf' => $this->getSacadorAvalista()->getUf(),
-                        'cidade' => $this->getSacadorAvalista()->getCidade(),
-                        'documento' => $this->getSacadorAvalista()->getDocumento(),
-                        'nome_documento' => $this->getSacadorAvalista()->getNomeDocumento(),
-                        'endereco2' => $this->getSacadorAvalista()->getCepCidadeUf(),
-                    ]
+                            'nome' => $this->getSacadorAvalista()->getNome(),
+                            'endereco' => $this->getSacadorAvalista()->getEndereco(),
+                            'bairro' => $this->getSacadorAvalista()->getBairro(),
+                            'cep' => $this->getSacadorAvalista()->getCep(),
+                            'uf' => $this->getSacadorAvalista()->getUf(),
+                            'cidade' => $this->getSacadorAvalista()->getCidade(),
+                            'documento' => $this->getSacadorAvalista()->getDocumento(),
+                            'nome_documento' => $this->getSacadorAvalista()->getNomeDocumento(),
+                            'endereco2' => $this->getSacadorAvalista()->getCepCidadeUf(),
+                        ]
                         : [],
                 'pagador' => [
                     'nome' => $this->getPagador()->getNome(),

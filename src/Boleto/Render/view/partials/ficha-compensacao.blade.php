@@ -99,7 +99,7 @@
         </td>
         <td>
             <div class="titulo">(-) Descontos / Abatimentos</div>
-            <div class="conteudo rtl"></div>
+            <div class="conteudo rtl">{{ $desconto }}</div>
         </td>
     </tr>
     <tr>
@@ -139,7 +139,7 @@
         </td>
         <td>
             <div class="titulo">(=) Valor cobrado</div>
-            <div class="conteudo rtl"></div>
+            <div class="conteudo rtl">{{ $valor_cobranca }}</div>
         </td>
     </tr>
     <tr>
