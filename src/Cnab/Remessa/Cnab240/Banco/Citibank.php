@@ -286,7 +286,7 @@ class Citibank extends AbstractRemessa implements RemessaContract
         $this->add(27, 28, '00');
         $this->add(29, 41, Util::formatCnab('9', '', 13, 2));
         $this->add(42, 42, '0');
-        $this->add(43, 50, Util::formatCnab('9', '0', 13, 2));
+        $this->add(43, 50, Util::formatCnab('9', '0', 8, 2));
         $this->add(51, 52, '00');
         $this->add(53, 65, Util::formatCnab('9', '0', 13, 2));
         $this->add(66, 66, $boleto->getMulta() > 0 ? '2' : '0'); //0 = ISENTO | 1 = VALOR FIXO | 2 = PERCENTUAL
@@ -337,7 +337,7 @@ class Citibank extends AbstractRemessa implements RemessaContract
         $this->add(152, 157, date('His'));
         $this->add(158, 163, Util::formatCnab('9', $this->getIdremessa(), 6));
         $this->add(164, 166, '083');
-        $this->add(167, 171, '1600BPI');
+        $this->add(167, 171, '');
         $this->add(172, 191, '');
         $this->add(192, 211, '');
         $this->add(212, 240, '');
@@ -377,7 +377,7 @@ class Citibank extends AbstractRemessa implements RemessaContract
         $this->add(184, 191, Util::formatCnab('9', $this->getIdremessa(), 8));
         $this->add(192, 199, $this->getDataRemessa('dmY'));
         $this->add(200, 207, '00000000');
-        $this->add(208, 240, '');
+        $this->add(208, 241, '');
 
         return $this;
     }
