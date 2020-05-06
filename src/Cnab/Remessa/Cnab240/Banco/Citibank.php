@@ -168,7 +168,8 @@ class Citibank extends AbstractRemessa implements RemessaContract
         $this->add(24, 35, '000000000000');
         $this->add(36, 36,'0');
         $this->add(37, 37, '0');
-        $this->add(38, 57, Util::formatCnab('9', $boleto->getNossoNumero(), 20));
+        $this->add(38, 49, Util::formatCnab('9', $boleto->getNossoNumero(), 12));
+        $this->add(50, 57, '');
         $this->add(58, 58, '1');
         $this->add(59, 59, '1');
         $this->add(60, 60, '');
@@ -181,7 +182,7 @@ class Citibank extends AbstractRemessa implements RemessaContract
         $this->add(88, 100, Util::formatCnab('9', $boleto->getValor(), 13, 2));
         $this->add(101, 105, '00000');
         $this->add(106, 106, '0');
-        $this->add(107, 108, Util::formatCnab('9', $boleto->getEspecieDocCodigo(), 2));
+        $this->add(107, 108, '03');
         $this->add(109, 109, Util::formatCnab('X', $boleto->getAceite() == 'N' ? 'N' : 'A', 1));    //N = Não Aceita     A = Aceite
         $this->add(110, 117, $boleto->getDataDocumento()->format('dmY'));
         $this->add(118, 118, ($boleto->getJuros() !== null && $boleto->getJuros() > 0) ? '2' : '0');    //0 = ISENTO | 1 = R$ ao dia | 2 = % ao mês
@@ -337,7 +338,7 @@ class Citibank extends AbstractRemessa implements RemessaContract
         $this->add(152, 157, date('His'));
         $this->add(158, 163, Util::formatCnab('9', $this->getIdremessa(), 6));
         $this->add(164, 166, '083');
-        $this->add(167, 171, '');
+        $this->add(167, 171, '01600');
         $this->add(172, 191, '');
         $this->add(192, 211, '');
         $this->add(212, 240, '');
@@ -395,18 +396,18 @@ class Citibank extends AbstractRemessa implements RemessaContract
         }, 0);
 
         $this->add(1, 3, Util::onlyNumbers($this->getCodigoBanco()));
-        $this->add(4, 7, '9999');
+        $this->add(4, 7, '0001');
         $this->add(8, 8, '5');
         $this->add(9, 17, '');
         $this->add(18, 23, Util::formatCnab('9', $this->getCountDetalhes() + 2, 6));
         $this->add(24, 29, Util::formatCnab('9', count($this->boletos), 6));
         $this->add(30, 46, Util::formatCnab('9', $valor, 15, 2));
-        $this->add(47, 52, Util::formatCnab('9', count($this->boletos), 6));
-        $this->add(53, 69, Util::formatCnab('9', $valor, 15, 2));
-        $this->add(70, 75, Util::formatCnab('9', count($this->boletos), 6));
-        $this->add(76, 92, Util::formatCnab('9', $valor, 15, 2));
-        $this->add(93, 98, Util::formatCnab('9', count($this->boletos), 6));
-        $this->add(99, 115, Util::formatCnab('9', $valor, 15, 2));
+        $this->add(47, 52, '000000');
+        $this->add(53, 69, '00000000000000000');
+        $this->add(70, 75, '000000');
+        $this->add(76, 92, '00000000000000000');
+        $this->add(93, 98, '000000');
+        $this->add(99, 115, '0000000000000000');
         $this->add(116, 123, Util::formatCnab('9', '0', 8));
         $this->add(124, 240, '');
 
