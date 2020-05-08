@@ -118,7 +118,7 @@ class Citibank extends AbstractRemessa implements RemessaContract
      *
      * @var null
      */
-    protected $fimArquivo = "";
+    protected $fimArquivo = "\n";
 
     /**
      * @param BoletoContract $boleto
@@ -401,13 +401,13 @@ class Citibank extends AbstractRemessa implements RemessaContract
         $this->add(9, 17, '');
         $this->add(18, 23, Util::formatCnab('9', $this->getCountDetalhes() + 2, 6));
         $this->add(24, 29, Util::formatCnab('9', count($this->boletos), 6));
-        $this->add(30, 46, Util::formatCnab('9', $valor, 15, 2));
+        $this->add(30, 46, Util::formatCnab('9', $valor, 17, 2));
         $this->add(47, 52, '000000');
         $this->add(53, 69, '00000000000000000');
         $this->add(70, 75, '000000');
         $this->add(76, 92, '00000000000000000');
         $this->add(93, 98, '000000');
-        $this->add(99, 115, '0000000000000000');
+        $this->add(99, 115, '00000000000000000');
         $this->add(116, 123, Util::formatCnab('9', '0', 8));
         $this->add(124, 240, '');
 
@@ -424,11 +424,11 @@ class Citibank extends AbstractRemessa implements RemessaContract
 
         $this->add(1, 3, Util::onlyNumbers($this->getCodigoBanco()));
         $this->add(4, 7, '9999');
-        $this->add(8, 8, '5');
+        $this->add(8, 8, '9');
         $this->add(9, 17, '');
-        $this->add(18, 23, Util::formatCnab('9', $this->getCountDetalhes() + 2, 6));
-        $this->add(24, 29, Util::formatCnab('9', count($this->boletos), 6));
-        $this->add(30, 35, Util::formatCnab('9', '0', 6));
+        $this->add(18, 23, '000001');
+        $this->add(24, 29, Util::formatCnab('9', $this->getCountDetalhes() + 4, 6));
+        $this->add(30, 35, '000000');
         $this->add(36, 240, '');
 
         return $this;
