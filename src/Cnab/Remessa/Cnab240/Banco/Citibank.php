@@ -186,7 +186,7 @@ class Citibank extends AbstractRemessa implements RemessaContract
         $this->add(109, 109, Util::formatCnab('X', $boleto->getAceite() == 'N' ? 'N' : 'A', 1));    //N = Não Aceita     A = Aceite
         $this->add(110, 117, $boleto->getDataDocumento()->format('dmY'));
         $this->add(118, 118, ($boleto->getJuros() !== null && $boleto->getJuros() > 0) ? '2' : '3');    //0 = ISENTO | 1 = R$ ao dia | 2 = % ao mês
-        $this->add(119, 126, $boleto->getDataVencimento()->format('dmY'));
+        $this->add(119, 126, '00000000');
         $this->add(127, 128, '00');
         $this->add(129, 141, Util::formatCnab('9', $boleto->getJuros(), 13, 2)); //Taxa mensal
         $this->add(142, 142, $boleto->getDesconto() > 0  ? '1' : '0'); //0 = SEM DESCONTO | 1 = VALOR FIXO | 2 = PERCENTUAL
