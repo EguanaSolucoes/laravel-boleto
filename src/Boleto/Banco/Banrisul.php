@@ -16,6 +16,8 @@ class Banrisul extends AbstractBoleto implements BoletoContract
      */
     protected $codigoBanco = self::COD_BANCO_BANRISUL;
 
+    protected $localPagamento = 'Pagável em qualquer agência bancária';
+
     /**
      * Define as carteiras disponíveis para este banco
      * 1 -> Cobrança Simples

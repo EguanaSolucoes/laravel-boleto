@@ -94,6 +94,15 @@ class Pdf extends AbstractPdf implements PdfContract
         }
 
         $this->traco('Recibo do Pagador', 4);
+
+        if (substr($this->boleto[$i]->getLinhaDigitavel(), 0, 3) == '041') {
+            $this->SetFont($this->PadraoFont, '', $this->fcel);
+            $this->Cell(25, $this->cell, $this->_('SAC Banrisul 0800 646 1515 e Ouvidoria Banrisul 0800 644 2200'), 0, 0);
+            $this->SetFont($this->PadraoFont, 'B', $this->fcel);
+        }
+
+        $this->Ln(5);
+
         return $this;
     }
 

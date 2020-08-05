@@ -34,7 +34,9 @@
         @endif
 
         <div class="linha-pontilhada" style="margin-bottom: 20px;">Recibo do pagador</div>
-
+        @if (substr($linha_digitavel, 0, 3) == '041')
+            <p>SAC Banrisul 0800 646 1515 e Ouvidoria Banrisul 0800 644 2200</p>
+        @endif
         <div class="info-empresa">
             @if ($logo)
                 <div style="display: inline-block;">
