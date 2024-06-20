@@ -146,7 +146,10 @@ class Bnb extends AbstractRemessa implements RemessaContract
         $this->add(111, 120, Util::formatCnab('X', $boleto->getNumeroDocumento(), 10));
         $this->add(121, 126, $boleto->getDataVencimento()->format('dmy'));
         $this->add(127, 139, Util::formatCnab('9', $boleto->getValor(), 13));
-        $this->add(140, 142, $this->getCodigoBanco());
+        // FIXADO EM 000 POR SOLICITAÇÃO DO PRÓPRIO BANCO NORDESTE EM UMA HOMOLOGAÇÃO
+        // REALIZADA EM JUNHO DE 2024
+        //$this->add(140, 142, $this->getCodigoBanco());
+        $this->add(140, 142, '000');
         $this->add(143, 146, '0000');
         $this->add(147, 147, '');
         $this->add(148, 149, $boleto->getEspecieDocCodigo());
