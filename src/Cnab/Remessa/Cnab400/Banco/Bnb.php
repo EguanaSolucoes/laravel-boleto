@@ -48,7 +48,7 @@ class Bnb extends AbstractRemessa implements RemessaContract
      *
      * @var array
      */
-    protected $carteiras = ['21'];
+    protected $carteiras = ['21', '41', '51'];
 
     /**
      * Caracter de fim de linha
@@ -71,10 +71,19 @@ class Bnb extends AbstractRemessa implements RemessaContract
      */
     public function getCarteiraNumero()
     {
-        if ($this->getCarteira() == '21') {
-            return '4';
+        switch ($this->getCarteira()) {
+            case '21':
+                return '4';
+                break;
+
+            case '41':
+                return '5';
+                break;
+
+            default:
+                return '1';
+                break;
         }
-        return '1';
     }
 
     /**
