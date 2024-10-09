@@ -100,7 +100,7 @@ class Bnb extends AbstractBoleto implements BoletoContract
 
         $campoLivre = Util::numberFormatGeral($this->getAgencia(), 4);
         $campoLivre .= Util::numberFormatGeral($this->getConta(), 7);
-        $campoLivre .= $this->getContaDv() ?: CalculoDV::bnbContaCorrente($this->getAgencia(), $this->getConta());
+        $campoLivre .= ! is_null($this->getContaDv()) ? $this->getContaDv() : CalculoDV::bnbContaCorrente($this->getAgencia(), $this->getConta());
         $campoLivre .= $this->getNossoNumero();
         $campoLivre .= Util::numberFormatGeral($this->getCarteira(), 2);
         $campoLivre .= '000';
