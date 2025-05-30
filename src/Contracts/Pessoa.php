@@ -12,5 +12,7 @@ interface Pessoa
     public function getCep();
     public function getCidade();
     public function getUf();
+    public function isDda();
+    public function setDda($dda);
     public function toArray();
 }

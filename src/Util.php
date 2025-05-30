@@ -985,6 +985,7 @@ final class Util
             BoletoContract::COD_BANCO_BB => 'Banco\\Bb',
             BoletoContract::COD_BANCO_SANTANDER => 'Banco\\Santander',
             BoletoContract::COD_BANCO_CEF => 'Banco\\Caixa',
+            BoletoContract::COD_BANCO_BTG => 'Banco\\Btg',
             BoletoContract::COD_BANCO_BRADESCO => 'Banco\\Bradesco',
             BoletoContract::COD_BANCO_ITAU => 'Banco\\Itau',
             BoletoContract::COD_BANCO_HSBC => 'Banco\\Hsbc',
