@@ -240,6 +240,22 @@ class CalculoDV
         return Util::modulo10($n);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | 208 - BTG
+    |--------------------------------------------------------------------------
+    */
+
+    public static function btgNossoNumero($carteira, $numero_boleto)
+    {
+        if (strlen($numero_boleto) < 11) {
+            $numero_boleto = Util::numberFormatGeral($numero_boleto, 11);
+        }
+        $n = '0' . Util::numberFormatGeral($carteira, 2) . $numero_boleto;
+
+        return Util::modulo11($n, 2, 7, 0, 'P');
+    }
+
     public static function itauNossoNumero($agencia, $conta, $carteira, $numero_boleto)
     {
         $n = Util::numberFormatGeral($agencia, 4)
