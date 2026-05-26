@@ -9,13 +9,15 @@
 </head>
 <body>
 
-<div style="width: 666px">
+<div class="wrapper">
     @yield('boleto')
 </div>
 
 @if(isset($imprimir_carregamento) && $imprimir_carregamento === true)
     <script type="text/javascript">
-        window.onload = function() { window.print(); }
+        window.onload = function () {
+            window.print();
+        }
     </script>
 @endif
 </body>

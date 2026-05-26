@@ -1,37 +1,36 @@
 <?php
 
-namespace Eduardokum\LaravelBoleto\Tests\Retorno;
+namespace Retorno;
 
-use Eduardokum\LaravelBoleto\Cnab\Retorno\Cnab400\Banco\Bradesco;
-use Eduardokum\LaravelBoleto\Cnab\Retorno\Cnab400\Detalhe;
-use Eduardokum\LaravelBoleto\Tests\TestCase;
+use Exception;
 use Illuminate\Support\Collection;
+use Eduardokum\LaravelBoleto\Tests\TestCase;
+use Eduardokum\LaravelBoleto\Cnab\Retorno\Cnab400\Detalhe;
+use Eduardokum\LaravelBoleto\Exception\ValidationException;
+use Eduardokum\LaravelBoleto\Cnab\Retorno\Cnab400\Banco\Bradesco;
 
 class RetornoCnab400Test extends TestCase
 {
-
-    /**
-     * @expectedException     \Exception
-     */
-    public function testRetornoInvalido(){
+    public function testRetornoInvalido()
+    {
+        $this->expectException(Exception::class);
         new Bradesco([]);
     }
 
-    /**
-     * @expectedException     \Exception
-     */
-    public function testRetornoBancoInvalido(){
+    public function testRetornoBancoInvalido()
+    {
+        $this->expectException(Exception::class);
         new Bradesco(__DIR__ . '/files/cnab400/retorno_banco_fake.ret');
     }
 
-    /**
-     * @expectedException     \Exception
-     */
-    public function testRetornoServicoInvalido(){
+    public function testRetornoServicoInvalido()
+    {
+        $this->expectException(Exception::class);
         new Bradesco(__DIR__ . '/files/cnab400/retorno_banco_fake_2.ret');
     }
 
-    public function testRetornoSeekableIterator(){
+    public function testRetornoSeekableIterator()
+    {
         $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/bradesco.ret');
         $retorno->processar();
         $retorno->rewind();
@@ -44,11 +43,12 @@ class RetornoCnab400Test extends TestCase
         $this->assertEquals(3, $retorno->key());
         $this->assertInstanceOf(Detalhe::class, $retorno->current());
 
-        $this->setExpectedException(\Exception::class);
+        $this->expectException(Exception::class);
         $retorno->seek(100);
     }
 
-    public function testRetornoToArray(){
+    public function testRetornoToArray()
+    {
         $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/bradesco.ret');
         $retorno->processar();
 
@@ -59,7 +59,8 @@ class RetornoCnab400Test extends TestCase
         $this->assertArrayHasKey('detalhes', $array);
     }
 
-    public function testRetornoOcorrencia(){
+    public function testRetornoOcorrencia()
+    {
         $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/bradesco.ret');
         $retorno->processar();
 
@@ -227,4 +228,230 @@ class RetornoCnab400Test extends TestCase
         }
     }
 
+    public function testRetornoBanrisulCnab400()
+    {
+        $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/banrisul.ret');
+        $retorno->processar();
+
+        $this->assertNotNull($retorno->getHeader());
+        $this->assertNotNull($retorno->getDetalhes());
+        $this->assertNotNull($retorno->getTrailer());
+
+        $this->assertEquals('Banco do Estado do Rio Grande do Sul S.A.', $retorno->getBancoNome());
+        $this->assertEquals('041', $retorno->getCodigoBanco());
+
+        $this->assertInstanceOf(Collection::class, $retorno->getDetalhes());
+        $this->assertInstanceOf(Detalhe::class, $retorno->getDetalhe(1));
+
+        foreach ($retorno->getDetalhes() as $detalhe) {
+            $this->assertInstanceOf(Detalhe::class, $detalhe);
+            $this->assertArrayHasKey('numeroDocumento', $detalhe->toArray());
+        }
+    }
+
+    public function testRetornoBbCnab400()
+    {
+        $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/bb.ret');
+        $retorno->processar();
+
+        $this->assertNotNull($retorno->getHeader());
+        $this->assertNotNull($retorno->getDetalhes());
+        $this->assertNotNull($retorno->getTrailer());
+
+        $this->assertEquals('Banco do Brasil S.A.', $retorno->getBancoNome());
+        $this->assertEquals('001', $retorno->getCodigoBanco());
+
+        $this->assertInstanceOf(Collection::class, $retorno->getDetalhes());
+        $this->assertInstanceOf(Detalhe::class, $retorno->getDetalhe(1));
+
+        foreach ($retorno->getDetalhes() as $detalhe) {
+            $this->assertInstanceOf(Detalhe::class, $detalhe);
+            $this->assertArrayHasKey('numeroDocumento', $detalhe->toArray());
+        }
+    }
+
+    public function testRetornoBnbCnab400()
+    {
+        $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/bnb.ret');
+        $retorno->processar();
+
+        $this->assertNotNull($retorno->getHeader());
+        $this->assertNotNull($retorno->getDetalhes());
+        $this->assertNotNull($retorno->getTrailer());
+
+        $this->assertEquals('Banco do Nordeste do Brasil S.A.', $retorno->getBancoNome());
+        $this->assertEquals('004', $retorno->getCodigoBanco());
+
+        $this->assertInstanceOf(Collection::class, $retorno->getDetalhes());
+        $this->assertInstanceOf(Detalhe::class, $retorno->getDetalhe(1));
+
+        foreach ($retorno->getDetalhes() as $detalhe) {
+            $this->assertInstanceOf(Detalhe::class, $detalhe);
+            $this->assertArrayHasKey('numeroDocumento', $detalhe->toArray());
+        }
+    }
+
+    public function testRetornoDellbankCnab400()
+    {
+        $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/delbank.ret');
+        $retorno->processar();
+
+        $this->assertNotNull($retorno->getHeader());
+        $this->assertNotNull($retorno->getDetalhes());
+        $this->assertNotNull($retorno->getTrailer());
+
+        $this->assertEquals('Delcred SCD S.A', $retorno->getBancoNome());
+        $this->assertEquals('435', $retorno->getCodigoBanco());
+
+        $this->assertInstanceOf(Collection::class, $retorno->getDetalhes());
+        $this->assertInstanceOf(Detalhe::class, $retorno->getDetalhe(1));
+
+        foreach ($retorno->getDetalhes() as $detalhe) {
+            $this->assertInstanceOf(Detalhe::class, $detalhe);
+            $this->assertArrayHasKey('numeroDocumento', $detalhe->toArray());
+        }
+    }
+
+    public function testRetornoFibraCnab400()
+    {
+        $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/fibra.ret');
+        $retorno->processar();
+
+        $this->assertNotNull($retorno->getHeader());
+        $this->assertNotNull($retorno->getDetalhes());
+        $this->assertNotNull($retorno->getTrailer());
+
+        $this->assertEquals('Banco Fibra S.A.', $retorno->getBancoNome());
+        $this->assertEquals('224', $retorno->getCodigoBanco());
+
+        $this->assertInstanceOf(Collection::class, $retorno->getDetalhes());
+        $this->assertInstanceOf(Detalhe::class, $retorno->getDetalhe(1));
+
+        foreach ($retorno->getDetalhes() as $detalhe) {
+            $this->assertInstanceOf(Detalhe::class, $detalhe);
+            $this->assertArrayHasKey('numeroDocumento', $detalhe->toArray());
+        }
+    }
+
+    public function testRetornoInterCnab400()
+    {
+        $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/inter.ret');
+        $retorno->processar();
+
+        $this->assertNotNull($retorno->getHeader());
+        $this->assertNotNull($retorno->getDetalhes());
+        $this->assertNotNull($retorno->getTrailer());
+
+        $this->assertEquals('Banco Inter S.A.', $retorno->getBancoNome());
+        $this->assertEquals('077', $retorno->getCodigoBanco());
+
+        $this->assertInstanceOf(Collection::class, $retorno->getDetalhes());
+        $this->assertInstanceOf(Detalhe::class, $retorno->getDetalhe(1));
+
+        foreach ($retorno->getDetalhes() as $detalhe) {
+            $this->assertInstanceOf(Detalhe::class, $detalhe);
+            $this->assertArrayHasKey('numeroDocumento', $detalhe->toArray());
+        }
+    }
+
+    public function testRetornoPineCnab400()
+    {
+        $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/pine.ret');
+        $retorno->processar();
+
+        $this->assertNotNull($retorno->getHeader());
+        $this->assertNotNull($retorno->getDetalhes());
+        $this->assertNotNull($retorno->getTrailer());
+
+        $this->assertEquals('Banco Pine S.A.', $retorno->getBancoNome());
+        $this->assertEquals('643', $retorno->getCodigoBanco());
+
+        $this->assertInstanceOf(Collection::class, $retorno->getDetalhes());
+        $this->assertInstanceOf(Detalhe::class, $retorno->getDetalhe(1));
+
+        foreach ($retorno->getDetalhes() as $detalhe) {
+            $this->assertInstanceOf(Detalhe::class, $detalhe);
+            $this->assertArrayHasKey('numeroDocumento', $detalhe->toArray());
+        }
+    }
+
+    public function testRetornoBvCnab400()
+    {
+        $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/bv.ret');
+        $retorno->processar();
+
+        $this->assertNotNull($retorno->getHeader());
+        $this->assertNotNull($retorno->getDetalhes());
+        $this->assertNotNull($retorno->getTrailer());
+
+        $this->assertEquals('Banco Votorantim S.A.', $retorno->getBancoNome());
+        $this->assertEquals('655', $retorno->getCodigoBanco());
+
+        $this->assertInstanceOf(Collection::class, $retorno->getDetalhes());
+        $this->assertInstanceOf(Detalhe::class, $retorno->getDetalhe(1));
+
+        foreach ($retorno->getDetalhes() as $detalhe) {
+            $this->assertInstanceOf(Detalhe::class, $detalhe);
+            $this->assertArrayHasKey('numeroDocumento', $detalhe->toArray());
+        }
+    }
+
+    public function testRetornoOurinvestCnab400()
+    {
+        $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/ourinvest.ret');
+        $retorno->processar();
+
+        $this->assertNotNull($retorno->getHeader());
+        $this->assertNotNull($retorno->getDetalhes());
+        $this->assertNotNull($retorno->getTrailer());
+
+        $this->assertEquals('Banco Ourinvest', $retorno->getBancoNome());
+        $this->assertEquals('712', $retorno->getCodigoBanco());
+
+        $this->assertInstanceOf(Collection::class, $retorno->getDetalhes());
+        $this->assertInstanceOf(Detalhe::class, $retorno->getDetalhe(1));
+
+        foreach ($retorno->getDetalhes() as $detalhe) {
+            $this->assertInstanceOf(Detalhe::class, $detalhe);
+            $this->assertArrayHasKey('numeroDocumento', $detalhe->toArray());
+        }
+    }
+
+    public function testRetornoPixCnab400()
+    {
+        $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/santander_pix.ret');
+        $retorno->processar();
+
+        $this->assertNotNull($retorno->getHeader());
+        $this->assertNotNull($retorno->getDetalhes());
+        $this->assertNotNull($retorno->getTrailer());
+
+        $this->assertCount(1, $retorno->getDetalhes());
+
+        $this->assertNotNull($retorno->current()->getId());
+        $this->assertNotNull($retorno->current()->getPixLocation());
+    }
+
+    public function testRetornoSemPixCnab400()
+    {
+        $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/santander.ret');
+        $retorno->processar();
+
+        $this->assertNotNull($retorno->getHeader());
+        $this->assertNotNull($retorno->getDetalhes());
+        $this->assertNotNull($retorno->getTrailer());
+
+        $this->assertCount(1, $retorno->getDetalhes());
+
+        $this->assertNull($retorno->current()->getId());
+        $this->assertNull($retorno->current()->getPixChave());
+        $this->assertNull($retorno->current()->getPixChaveTipo());
+    }
+
+    public function testRetornoSemDetalheCnab400()
+    {
+        $this->expectException(ValidationException::class);
+        $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab400/retorno_sem_detalhe.ret');
+        $retorno->processar();
+    }
 }

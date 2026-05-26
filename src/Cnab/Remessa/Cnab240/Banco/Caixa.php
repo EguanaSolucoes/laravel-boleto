@@ -1,22 +1,16 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: simetriatecnologia
- * Date: 15/09/16
- * Time: 14:02
- */
 
 namespace Eduardokum\LaravelBoleto\Cnab\Remessa\Cnab240\Banco;
 
+use Eduardokum\LaravelBoleto\Util;
 use Eduardokum\LaravelBoleto\CalculoDV;
+use Eduardokum\LaravelBoleto\Exception\ValidationException;
 use Eduardokum\LaravelBoleto\Cnab\Remessa\Cnab240\AbstractRemessa;
 use Eduardokum\LaravelBoleto\Contracts\Boleto\Boleto as BoletoContract;
 use Eduardokum\LaravelBoleto\Contracts\Cnab\Remessa as RemessaContract;
-use Eduardokum\LaravelBoleto\Util;
 
 class Caixa extends AbstractRemessa implements RemessaContract
 {
-
     const OCORRENCIA_REMESSA = '01';
     const OCORRENCIA_PEDIDO_BAIXA = '02';
     const OCORRENCIA_CONCESSAO_ABATIMENTO = '04';
@@ -43,8 +37,7 @@ class Caixa extends AbstractRemessa implements RemessaContract
     const OCORRENCIA_SERVICOS = '40';
     const OCORRENCIA_ALT_VALOR = '47';
     const OCORRENCIA_ALT_VALOR_MIN_MAX = '48';
-
-    const PROTESTO_SEM = '0';
+    const PROTESTO_SEM = '3';
     const PROTESTO_DIAS_UTEIS = '1';
     const PROTESTO_NAO_PROTESTAR = '3';
     const PROTESTO_AUTOMATICO = '9';
@@ -62,13 +55,12 @@ class Caixa extends AbstractRemessa implements RemessaContract
      */
     protected $codigoBanco = BoletoContract::COD_BANCO_CEF;
 
-
     /**
      * Define as carteiras disponíveis para cada banco
      *
      * @var array
      */
-    protected $carteiras = ['RG'];
+    protected $carteiras = ['RG', '1'];
 
     /**
      * Codigo do cliente junto ao banco.
@@ -104,8 +96,8 @@ class Caixa extends AbstractRemessa implements RemessaContract
     /**
      * @param BoletoContract $boleto
      *
-     * @return $this
-     * @throws \Exception
+     * @return Caixa
+     * @throws ValidationException
      */
     public function addBoleto(BoletoContract $boleto)
     {
@@ -113,14 +105,15 @@ class Caixa extends AbstractRemessa implements RemessaContract
         $this->segmentoP($boleto);
         $this->segmentoQ($boleto);
         $this->segmentoR($boleto);
+
         return $this;
     }
 
     /**
      * @param BoletoContract $boleto
      *
-     * @return $this
-     * @throws \Exception
+     * @return Caixa
+     * @throws ValidationException
      */
     protected function segmentoP(BoletoContract $boleto)
     {
@@ -139,17 +132,22 @@ class Caixa extends AbstractRemessa implements RemessaContract
             $this->add(16, 17, self::OCORRENCIA_ALT_OUTROS_DADOS);
         }
         $this->add(18, 22, Util::formatCnab('9', $this->getAgencia(), 5));
-        $this->add(23, 23, CalculoDV::cefAgencia($this->getAgencia()));
-        $this->add(24, 29, Util::formatCnab('9', $this->getCodigoCliente(), 6));
-        $this->add(30, 37, '00000000');
-        $this->add(38, 40, '000');
-        $this->add(41, 57, Util::formatCnab('9', $boleto->getNossoNumero(), 17));
+        $this->add(23, 23, !is_null($this->getAgenciaDv()) ? $this->getAgenciaDv() : CalculoDV::cefAgencia($this->getAgencia()));
+        if (strlen($this->getCodigoCliente()) == 7) {
+            $this->add(24, 30, Util::formatCnab('9', $this->getCodigoCliente(), 7));
+            $this->add(31, 37, '0000000');
+        } else {
+            $this->add(24, 29, Util::formatCnab('9', $this->getCodigoCliente(), 6));
+            $this->add(30, 37, '00000000');
+        }
+        $this->add(38, 39, '00');
+        $this->add(40, 57, Util::formatCnab('9', $boleto->getNossoNumero(), 18));
         $this->add(58, 58, '1'); //'1' = Cobrança Simples
-        $this->add(59, 59, '1'); // ‘1’ - Cobrança Registrada
+        $this->add(59, 59, '1'); //'1' - Cobrança Registrada
         $this->add(60, 60, '2'); //'2’ - Escritural
         $this->add(61, 61, '2'); //‘2’ = Cliente Emite
         $this->add(62, 62, '0'); //‘0’ = Postagem pelo Beneficiário
-        $this->add(63, 73, Util::formatCnab('9', $boleto->getNumeroDocumento(), 11));
+        $this->add(63, 73, Util::formatCnab('X', $boleto->getNumeroDocumento(), 11));
         $this->add(74, 77, '');
         $this->add(78, 85, $boleto->getDataVencimento()->format('dmY'));
         $this->add(86, 100, Util::formatCnab('9', $boleto->getValor(), 15, 2));
@@ -158,9 +156,9 @@ class Caixa extends AbstractRemessa implements RemessaContract
         $this->add(107, 108, Util::formatCnab('9', $boleto->getEspecieDocCodigo(), 2));
         $this->add(109, 109, Util::formatCnab('9', $boleto->getAceite(), 1));
         $this->add(110, 117, $boleto->getDataDocumento()->format('dmY'));
-        $this->add(118, 118, $boleto->getJuros() ? '1' : '3'); //'1' = Valor por Dia, '3' = Isento
-        $this->add(119, 126, $boleto->getDataVencimento()->format('dmY'));
-        $this->add(127, 141, Util::formatCnab('9', $boleto->getMoraDia(), 15, 2)); //Valor da mora/dia ou Taxa mensal
+        $this->add(118, 118, $boleto->getJuros() ? '2' : '3'); //'2' = Percentual Mensal '3' = Isento
+        $this->add(119, 126, $boleto->getDataVencimento()->copy()->addDays($boleto->getJurosApos() === false ? 1 : (int) $boleto->getJurosApos())->format('dmY'));
+        $this->add(127, 141, Util::formatCnab('9', $boleto->getJuros(), 15, 2)); //Taxa mensal
         $this->add(142, 142, $boleto->getDesconto() > 0 ? '1' : '0'); // 0 = Sem Desconto, 1 = Valor Fixo até a data informada, 2 = Percentual até a data informada
         $this->add(143, 150, $boleto->getDesconto() > 0 ? $boleto->getDataDesconto()->format('dmY') : '00000000');
         $this->add(151, 165, Util::formatCnab('9', $boleto->getDesconto(), 15, 2));
@@ -172,14 +170,8 @@ class Caixa extends AbstractRemessa implements RemessaContract
             $this->add(221, 221, self::PROTESTO_DIAS_UTEIS);
         }
         $this->add(222, 223, Util::formatCnab('9', $boleto->getDiasProtesto(), 2));
-        $this->add(224, 224, '2'); // '2' = Não Baixar / Não Devolver (NÃO TRATADO PELO BANCO)
-        if ($boleto->baixarBoleto() > 0) {
-            $this->add(224, 224, '1'); // '2' = Não Baixar / Não Devolver (NÃO TRATADO PELO BANCO)
-        }
-        $this->add(225, 227, '030');
-        if ($boleto->getDiasBaixaAutomatica() > 0) {
-            $this->add(225, 227, Util::formatCnab('9', $boleto->getDiasBaixaAutomatica(), 3));  //Se informado 000 será baixado no dia posterior do vencimento. Se for informado '' será baixado 5 dias após o vencimento, se não será baixado os dias informados
-        }
+        $this->add(224, 224, $boleto->getDiasProtesto() > 0 ? '2' : '1'); // '1' = Baixar/Devolver / 2' = Não Baixar / Não Devolver (NÃO TRATADO PELO BANCO)
+        $this->add(225, 227, Util::formatCnab('9', $boleto->getDiasBaixaAutomatica(), 3));  //Se informado 000 será baixado no dia posterior do vencimento. Se for informado '' será baixado 5 dias após o vencimento, se não será baixado os dias informados
         $this->add(228, 229, Util::formatCnab('9', $boleto->getMoeda(), 2));
         $this->add(230, 239, '0000000000');
         $this->add(240, 240, '');
@@ -190,8 +182,8 @@ class Caixa extends AbstractRemessa implements RemessaContract
     /**
      * @param BoletoContract $boleto
      *
-     * @return $this
-     * @throws \Exception
+     * @return Caixa
+     * @throws ValidationException
      */
     public function segmentoQ(BoletoContract $boleto)
     {
@@ -231,7 +223,7 @@ class Caixa extends AbstractRemessa implements RemessaContract
         $this->add(213, 232, '');
         $this->add(233, 240, '');
 
-        if($boleto->getSacadorAvalista()) {
+        if ($boleto->getSacadorAvalista()) {
             $this->add(154, 154, strlen(Util::onlyNumbers($boleto->getSacadorAvalista()->getDocumento())) == 14 ? 2 : 1);
             $this->add(155, 169, Util::formatCnab('9', Util::onlyNumbers($boleto->getSacadorAvalista()->getDocumento()), 15));
             $this->add(170, 209, Util::formatCnab('X', $boleto->getSacadorAvalista()->getNome(), 30));
@@ -243,8 +235,8 @@ class Caixa extends AbstractRemessa implements RemessaContract
     /**
      * @param BoletoContract $boleto
      *
-     * @return $this
-     * @throws \Exception
+     * @return Caixa
+     * @throws ValidationException
      */
     public function segmentoR(BoletoContract $boleto)
     {
@@ -255,6 +247,8 @@ class Caixa extends AbstractRemessa implements RemessaContract
         $this->add(9, 13, Util::formatCnab('9', $this->iRegistrosLote, 5));
         $this->add(14, 14, 'R');
         $this->add(15, 15, '');
+        $this->add(67, 74, $boleto->getMulta() > 0 ?  $boleto->getDataVencimento()->copy()->addDays($boleto->getMultaApos())->format('dmY') : '00000000');
+        
         $this->add(16, 17, self::OCORRENCIA_REMESSA);
         if ($boleto->getStatus() == $boleto::STATUS_BAIXA) {
             $this->add(16, 17, self::OCORRENCIA_PEDIDO_BAIXA);
@@ -269,7 +263,7 @@ class Caixa extends AbstractRemessa implements RemessaContract
         $this->add(43, 50, '00000000');
         $this->add(51, 65, '000000000000000');
         $this->add(66, 66, $boleto->getMulta() > 0 ? '2' : '0'); //0 = ISENTO | 1 = VALOR FIXO | 2 = PERCENTUAL
-        $this->add(67, 74, $boleto->getDataVencimento()->format('dmY'));
+        $this->add(67, 74, $boleto->getMulta() > 0 ?  $boleto->getDataVencimento()->copy()->addDays($boleto->getMultaApos())->format('dmY') : '00000000');
         $this->add(75, 89, Util::formatCnab('9', $boleto->getMulta(), 15, 2));  //2,20 = 0000000000220
         $this->add(90, 240, '');
 
@@ -277,8 +271,8 @@ class Caixa extends AbstractRemessa implements RemessaContract
     }
 
     /**
-     * @return $this
-     * @throws \Exception
+     * @return Caixa
+     * @throws ValidationException
      */
     protected function header()
     {
@@ -295,9 +289,14 @@ class Caixa extends AbstractRemessa implements RemessaContract
         $this->add(19, 32, Util::formatCnab('9', Util::onlyNumbers($this->getBeneficiario()->getDocumento()), 14));
         $this->add(33, 52, Util::formatCnab('9', 0, 20));
         $this->add(53, 57, Util::formatCnab('9', $this->getAgencia(), 5));
-        $this->add(58, 58, CalculoDV::cefAgencia($this->getAgencia()));
-        $this->add(59, 64, Util::formatCnab('9', $this->getCodigoCliente(), 6));
-        $this->add(65, 72, '00000000');
+        $this->add(58, 58, !is_null($this->getAgenciaDv()) ? $this->getAgenciaDv() : CalculoDV::cefAgencia($this->getAgencia()));
+        if (strlen($this->getCodigoCliente()) == 7) {
+            $this->add(59, 65, Util::formatCnab('9', $this->getCodigoCliente(), 7));
+            $this->add(66, 72, '0000000');
+        } else {
+            $this->add(59, 64, Util::formatCnab('9', $this->getCodigoCliente(), 6));
+            $this->add(65, 72, '00000000');
+        }
         $this->add(73, 102, Util::formatCnab('X', $this->getBeneficiario()->getNome(), 30));
         $this->add(103, 132, Util::formatCnab('X', 'CAIXA ECONOMICA FEDERAL', 30));
         $this->add(133, 142, '');
@@ -305,18 +304,19 @@ class Caixa extends AbstractRemessa implements RemessaContract
         $this->add(144, 151, $this->getDataRemessa('dmY'));
         $this->add(152, 157, date('His'));
         $this->add(158, 163, Util::formatCnab('9', $this->getIdremessa(), 6));
-        $this->add(164, 166, '101');
+        $this->add(164, 166, strlen($this->getCodigoCliente()) == 7 ? '107' : '101');
         $this->add(167, 171, '00000');
         $this->add(172, 191, '');
-        $this->add(192, 211, '');
+        $this->add(192, 211, Util::formatCnab('X', 'REMESSA-PRODUCAO', 20));
         $this->add(212, 215, '');
         $this->add(216, 240, '');
+
         return $this;
     }
 
     /**
-     * @return $this
-     * @throws \Exception
+     * @return Caixa
+     * @throws ValidationException
      */
     protected function headerLote()
     {
@@ -331,15 +331,24 @@ class Caixa extends AbstractRemessa implements RemessaContract
         $this->add(9, 9, 'R');
         $this->add(10, 11, '01');
         $this->add(12, 13, '00');
-        $this->add(14, 16, '060');
+        $this->add(14, 16, strlen($this->getCodigoCliente()) == 7 ? '067' : '060');
         $this->add(17, 17, '');
         $this->add(18, 18, strlen(Util::onlyNumbers($this->getBeneficiario()->getDocumento())) == 14 ? 2 : 1);
         $this->add(19, 33, Util::formatCnab('9', Util::onlyNumbers($this->getBeneficiario()->getDocumento()), 15));
-        $this->add(34, 39, Util::formatCnab('9', Util::onlyNumbers($this->getCodigoCliente()), 6));
-        $this->add(40, 53, Util::formatCnab('9', 0, 14));
+        if (strlen($this->getCodigoCliente()) == 7) {
+            $this->add(34, 40, Util::formatCnab('9', Util::onlyNumbers($this->getCodigoCliente()), 7));
+            $this->add(41, 53, Util::formatCnab('9', 0, 13));
+        } else {
+            $this->add(34, 39, Util::formatCnab('9', Util::onlyNumbers($this->getCodigoCliente()), 6));
+            $this->add(40, 53, Util::formatCnab('9', 0, 14));
+        }
         $this->add(54, 58, Util::formatCnab('9', $this->getAgencia(), 5));
-        $this->add(59, 59, CalculoDV::cefAgencia($this->getAgencia()));
-        $this->add(60, 65, Util::formatCnab('9', Util::onlyNumbers($this->getCodigoCliente()), 6));
+        $this->add(59, 59, !is_null($this->getAgenciaDv()) ? $this->getAgenciaDv() : CalculoDV::cefAgencia($this->getAgencia()));
+        if (strlen($this->getCodigoCliente()) == 7) {
+            $this->add(60, 65, '000000');
+        } else {
+            $this->add(60, 65, Util::formatCnab('9', Util::onlyNumbers($this->getCodigoCliente()), 6));
+        }
         $this->add(66, 72, '0000000');
         $this->add(73, 73, '0');
         $this->add(74, 103, Util::formatCnab('X', $this->getBeneficiario()->getNome(), 30));
@@ -353,14 +362,14 @@ class Caixa extends AbstractRemessa implements RemessaContract
     }
 
     /**
-     * @return $this
-     * @throws \Exception
+     * @return Caixa
+     * @throws ValidationException
      */
     protected function trailerLote()
     {
         $this->iniciaTrailerLote();
 
-        $valor = array_reduce($this->boletos, function($valor, $boleto) {
+        $valor = array_reduce($this->boletos, function ($valor, $boleto) {
             return $valor + $boleto->getValor();
         }, 0);
 
@@ -382,8 +391,8 @@ class Caixa extends AbstractRemessa implements RemessaContract
     }
 
     /**
-     * @return $this
-     * @throws \Exception
+     * @return Caixa
+     * @throws ValidationException
      */
     protected function trailer()
     {

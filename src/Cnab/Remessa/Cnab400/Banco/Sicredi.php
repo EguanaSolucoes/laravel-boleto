@@ -1,11 +1,13 @@
 <?php
+
 namespace Eduardokum\LaravelBoleto\Cnab\Remessa\Cnab400\Banco;
 
 use Carbon\Carbon;
+use Eduardokum\LaravelBoleto\Util;
+use Eduardokum\LaravelBoleto\Exception\ValidationException;
 use Eduardokum\LaravelBoleto\Cnab\Remessa\Cnab400\AbstractRemessa;
 use Eduardokum\LaravelBoleto\Contracts\Boleto\Boleto as BoletoContract;
 use Eduardokum\LaravelBoleto\Contracts\Cnab\Remessa as RemessaContract;
-use Eduardokum\LaravelBoleto\Util;
 
 class Sicredi extends AbstractRemessa implements RemessaContract
 {
@@ -19,7 +21,6 @@ class Sicredi extends AbstractRemessa implements RemessaContract
     const ESPECIE_NOTA_DEBITOS = 'I';
     const ESPECIE_NOTA_SERVICOS = 'J';
     const ESPECIE_OUTROS = 'K';
-
     const OCORRENCIA_REMESSA = '01';
     const OCORRENCIA_BAIXA = '02';
     const OCORRENCIA_CONCESSAO_ABATIMENTO = '04';
@@ -29,7 +30,6 @@ class Sicredi extends AbstractRemessa implements RemessaContract
     const OCORRENCIA_SUSTAR_PROTESTO = '18';
     const OCORRENCIA_SUSTAR_PROTESTO_MANTER_CARTEIRA = '19';
     const OCORRENCIA_ALT_OUTROS_DADOS = '31';
-
     const INSTRUCAO_SEM = '00';
     const INSTRUCAO_PROTESTO = '06';
 
@@ -50,6 +50,7 @@ class Sicredi extends AbstractRemessa implements RemessaContract
     public function setCarteira($carteira)
     {
         $this->carteira = 'A';
+
         return $this;
     }
 
@@ -82,8 +83,39 @@ class Sicredi extends AbstractRemessa implements RemessaContract
     protected $fimArquivo = "\r\n";
 
     /**
-     * @return $this
-     * @throws \Exception
+     * Codigo do cliente junto ao banco.
+     *
+     * @var string
+     */
+    protected $codigoCliente;
+
+    /**
+     * Retorna o codigo do cliente.
+     *
+     * @return mixed
+     */
+    public function getCodigoCliente()
+    {
+        return $this->codigoCliente;
+    }
+
+    /**
+     * Seta o codigo do cliente.
+     *
+     * @param mixed $codigoCliente
+     *
+     * @return Sicredi
+     */
+    public function setCodigoCliente($codigoCliente)
+    {
+        $this->codigoCliente = $codigoCliente;
+
+        return $this;
+    }
+
+    /**
+     * @return Sicredi
+     * @throws ValidationException
      */
     protected function header()
     {
@@ -94,7 +126,7 @@ class Sicredi extends AbstractRemessa implements RemessaContract
         $this->add(3, 9, 'REMESSA');
         $this->add(10, 11, '01');
         $this->add(12, 26, Util::formatCnab('X', 'COBRANCA', 15));
-        $this->add(27, 31, Util::formatCnab('9', $this->getConta(), 5));
+        $this->add(27, 31, Util::formatCnab('9', $this->getCodigoCliente(), 5));
         $this->add(32, 45, Util::formatCnab('9L', $this->getBeneficiario()->getDocumento(), 14, 0, 0));
         $this->add(46, 76, '');
         $this->add(77, 79, $this->getCodigoBanco());
@@ -110,19 +142,19 @@ class Sicredi extends AbstractRemessa implements RemessaContract
     }
 
     /**
-     * @param BoletoContract $boleto
+     * @param \Eduardokum\LaravelBoleto\Boleto\Banco\Sicredi $boleto
      *
-     * @return $this
-     * @throws \Exception
+     * @return Sicredi
+     * @throws ValidationException
      */
     public function addBoleto(BoletoContract $boleto)
     {
         $this->boletos[] = $boleto;
-        if (!$boleto->isComRegistro()) {
+        if (! $boleto->isComRegistro()) {
             return $this;
         }
 
-        $this->iniciaDetalhe();
+        $this->iniciaDetalhe(($chaveNfe = $boleto->getChaveNfe()) ? 44 : 0);
 
         $this->add(1, 1, '1');
         $this->add(2, 2, 'A');
@@ -151,10 +183,10 @@ class Sicredi extends AbstractRemessa implements RemessaContract
             $this->add(109, 110, self::OCORRENCIA_BAIXA); // BAIXA
         }
         if ($boleto->getStatus() == $boleto::STATUS_ALTERACAO) {
-            $this->add(109, 110, self::OCORRENCIA_ALT_VENCIMENTO); // ALTERAR VENCIMENTO
+            $this->add(109, 110, self::OCORRENCIA_ALT_OUTROS_DADOS); // ALTERAR OUTROS DADOS (Endereço, etc.)
         }
         if ($boleto->getStatus() == $boleto::STATUS_ALTERACAO_DATA) {
-            $this->add(109, 110, self::OCORRENCIA_ALT_VENCIMENTO);
+            $this->add(109, 110, self::OCORRENCIA_ALT_VENCIMENTO); // ALTERAR VENCIMENTO
         }
         if ($boleto->getStatus() == $boleto::STATUS_CUSTOM) {
             $this->add(109, 110, sprintf('%2.02s', $boleto->getComando()));
@@ -163,7 +195,7 @@ class Sicredi extends AbstractRemessa implements RemessaContract
         $this->add(121, 126, $boleto->getDataVencimento()->format('dmy'));
         $this->add(127, 139, Util::formatCnab('9', $boleto->getValor(), 13, 2));
         $this->add(140, 148, '');
-        $this->add(149, 149, $boleto->getEspecieDocCodigo('A'));
+        $this->add(149, 149, $boleto->getEspecieDocCodigo('A', 400));
         $this->add(150, 150, $boleto->getAceite());
         $this->add(151, 156, $boleto->getDataDocumento()->format('dmy'));
         $this->add(157, 158, self::INSTRUCAO_SEM);
@@ -189,6 +221,9 @@ class Sicredi extends AbstractRemessa implements RemessaContract
         $this->add(340, 353, $boleto->getSacadorAvalista() ? Util::formatCnab('9L', $boleto->getSacadorAvalista()->getDocumento(), 14) : Util::formatCnab('X', '', 14));
         $this->add(354, 394, Util::formatCnab('X', $boleto->getSacadorAvalista() ? $boleto->getSacadorAvalista()->getNome() : '', 41));
         $this->add(395, 400, Util::formatCnab('9', $this->iRegistros + 1, 6));
+        if ($chaveNfe) {
+            $this->add(401, 444, Util::formatCnab('9', $chaveNfe, 44));
+        }
 
         if ($boleto->getByte() == 1) {
             $this->iniciaDetalhe();
@@ -209,8 +244,8 @@ class Sicredi extends AbstractRemessa implements RemessaContract
     }
 
     /**
-     * @return $this
-     * @throws \Exception
+     * @return Sicredi
+     * @throws ValidationException
      */
     protected function trailer()
     {
@@ -219,7 +254,7 @@ class Sicredi extends AbstractRemessa implements RemessaContract
         $this->add(1, 1, '9');
         $this->add(2, 2, '1');
         $this->add(3, 5, $this->getCodigoBanco());
-        $this->add(6, 10, $this->getConta());
+        $this->add(6, 10, $this->getCodigoCliente());
         $this->add(11, 394, '');
         $this->add(395, 400, Util::formatCnab('9', $this->getCount(), 6));
 

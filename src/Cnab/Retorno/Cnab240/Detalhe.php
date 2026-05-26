@@ -1,11 +1,14 @@
 <?php
+
 namespace Eduardokum\LaravelBoleto\Cnab\Retorno\Cnab240;
 
 use Carbon\Carbon;
-use Eduardokum\LaravelBoleto\Contracts\Cnab\Retorno\Cnab240\Detalhe as DetalheContract;
-use Eduardokum\LaravelBoleto\Contracts\Pessoa as PessoaContract;
-use Eduardokum\LaravelBoleto\MagicTrait;
 use Eduardokum\LaravelBoleto\Util;
+use Eduardokum\LaravelBoleto\Pessoa;
+use Eduardokum\LaravelBoleto\MagicTrait;
+use Eduardokum\LaravelBoleto\Exception\ValidationException;
+use Eduardokum\LaravelBoleto\Contracts\Pessoa as PessoaContract;
+use Eduardokum\LaravelBoleto\Contracts\Cnab\Retorno\Cnab240\Detalhe as DetalheContract;
 
 class Detalhe implements DetalheContract
 {
@@ -55,6 +58,7 @@ class Detalhe implements DetalheContract
      * @var Carbon
      */
     protected $dataOcorrencia;
+
     /**
      * @var Carbon
      */
@@ -78,19 +82,33 @@ class Detalhe implements DetalheContract
     /**
      * @var string
      */
+    protected $valorOutrasDespesas;
+
+    /**
+     * @var string
+     */
+    protected $valorOutrosCreditos;
+
+    /**
+     * @var string
+     */
     protected $valorIOF;
+
     /**
      * @var string
      */
     protected $valorAbatimento;
+
     /**
      * @var string
      */
     protected $valorDesconto;
+
     /**
      * @var string
      */
     protected $valorMora;
+
     /**
      * @var string
      */
@@ -107,6 +125,21 @@ class Detalhe implements DetalheContract
     protected $cheques = [];
 
     /**
+     * @var
+     */
+    protected $id;
+
+    /**
+     * @var
+     */
+    protected $pixQrCode;
+
+    /**
+     * @var
+     */
+    protected $pixLocation;
+
+    /**
      * @var string
      */
     protected $error;
@@ -120,13 +153,13 @@ class Detalhe implements DetalheContract
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function hasOcorrencia()
     {
         $ocorrencias = func_get_args();
 
-        if (count($ocorrencias) == 0 && !empty($this->getOcorrencia())) {
+        if (count($ocorrencias) == 0 && ! empty($this->getOcorrencia())) {
             return true;
         }
 
@@ -144,7 +177,7 @@ class Detalhe implements DetalheContract
     /**
      * @param string $ocorrencia
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setOcorrencia($ocorrencia)
     {
@@ -164,7 +197,7 @@ class Detalhe implements DetalheContract
     /**
      * @param string $ocorrenciaTipo
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setOcorrenciaTipo($ocorrenciaTipo)
     {
@@ -184,7 +217,7 @@ class Detalhe implements DetalheContract
     /**
      * @param string $ocorrenciaDescricao
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setOcorrenciaDescricao($ocorrenciaDescricao)
     {
@@ -204,7 +237,7 @@ class Detalhe implements DetalheContract
     /**
      * @param int $numeroControle
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setNumeroControle($numeroControle)
     {
@@ -224,7 +257,7 @@ class Detalhe implements DetalheContract
     /**
      * @param string $numeroDocumento
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setNumeroDocumento($numeroDocumento)
     {
@@ -244,7 +277,7 @@ class Detalhe implements DetalheContract
     /**
      * @param string $nossoNumero
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setNossoNumero($nossoNumero)
     {
@@ -264,7 +297,7 @@ class Detalhe implements DetalheContract
     /**
      * @param string $carteira
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setCarteira($carteira)
     {
@@ -286,11 +319,11 @@ class Detalhe implements DetalheContract
     }
 
     /**
-     * @param $dataVencimento
+     * @param        $dataVencimento
      *
      * @param string $format
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setDataVencimento($dataVencimento, $format = 'dmY')
     {
@@ -312,11 +345,11 @@ class Detalhe implements DetalheContract
     }
 
     /**
-     * @param $dataCredito
+     * @param        $dataCredito
      *
      * @param string $format
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setDataCredito($dataCredito, $format = 'dmY')
     {
@@ -338,11 +371,11 @@ class Detalhe implements DetalheContract
     }
 
     /**
-     * @param $dataOcorrencia
+     * @param        $dataOcorrencia
      *
      * @param string $format
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setDataOcorrencia($dataOcorrencia, $format = 'dmY')
     {
@@ -362,7 +395,7 @@ class Detalhe implements DetalheContract
     /**
      * @param string $valor
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setValor($valor)
     {
@@ -382,7 +415,7 @@ class Detalhe implements DetalheContract
     /**
      * @param string $valorIOF
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setValorIOF($valorIOF)
     {
@@ -402,7 +435,7 @@ class Detalhe implements DetalheContract
     /**
      * @param string $valorAbatimento
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setValorAbatimento($valorAbatimento)
     {
@@ -422,7 +455,7 @@ class Detalhe implements DetalheContract
     /**
      * @param string $valorDesconto
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setValorDesconto($valorDesconto)
     {
@@ -442,7 +475,7 @@ class Detalhe implements DetalheContract
     /**
      * @param string $valorMora
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setValorMora($valorMora)
     {
@@ -462,7 +495,7 @@ class Detalhe implements DetalheContract
     /**
      * @param string $valorMulta
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setValorMulta($valorMulta)
     {
@@ -482,7 +515,7 @@ class Detalhe implements DetalheContract
     /**
      * @param string $valorRecebido
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setValorRecebido($valorRecebido)
     {
@@ -502,11 +535,51 @@ class Detalhe implements DetalheContract
     /**
      * @param string $valorTarifa
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setValorTarifa($valorTarifa)
     {
         $this->valorTarifa = $valorTarifa;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getValorOutrasDespesas()
+    {
+        return $this->valorOutrasDespesas;
+    }
+
+    /**
+     * @param string $valorOutrasDespesas
+     *
+     * @return Detalhe
+     */
+    public function setValorOutrasDespesas($valorOutrasDespesas)
+    {
+        $this->valorOutrasDespesas = $valorOutrasDespesas;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getValorOutrosCreditos()
+    {
+        return $this->valorOutrosCreditos;
+    }
+
+    /**
+     * @param string $valorOutrosCreditos
+     *
+     * @return Detalhe
+     */
+    public function setValorOutrosCreditos($valorOutrosCreditos)
+    {
+        $this->valorOutrosCreditos = $valorOutrosCreditos;
 
         return $this;
     }
@@ -522,12 +595,14 @@ class Detalhe implements DetalheContract
     /**
      * @param $pagador
      *
-     * @return $this
-     * @throws \Exception
+     * @return Detalhe
+     * @throws ValidationException
      */
     public function setPagador($pagador)
     {
         Util::addPessoa($this->pagador, $pagador);
+        $this->pagador->setTipo(Pessoa::TIPO_PAGADOR);
+
         return $this;
     }
 
@@ -538,7 +613,7 @@ class Detalhe implements DetalheContract
      */
     public function hasError()
     {
-        return $this->getOcorrencia() == self::OCORRENCIA_ERRO;
+        return $this->getOcorrenciaTipo() == self::OCORRENCIA_ERRO;
     }
 
     /**
@@ -561,7 +636,6 @@ class Detalhe implements DetalheContract
         return $this;
     }
 
-
     /**
      * @return string
      */
@@ -573,7 +647,7 @@ class Detalhe implements DetalheContract
     /**
      * @param string $error
      *
-     * @return $this
+     * @return Detalhe
      */
     public function setError($error)
     {
@@ -581,5 +655,102 @@ class Detalhe implements DetalheContract
         $this->error = $error;
 
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRejeicao()
+    {
+        return $this->rejeicao;
+    }
+
+    /**
+     * @param string $rejeicao
+     *
+     * @return Detalhe
+     */
+    public function setRejeicao($rejeicao)
+    {
+        $this->rejeicao = $rejeicao;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     * @return Detalhe
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPixQrCode()
+    {
+        return $this->pixQrCode;
+    }
+
+    /**
+     * @param mixed $pixQrCode
+     * @return Detalhe
+     */
+    public function setPixQrCode($pixQrCode)
+    {
+        $this->pixQrCode = $pixQrCode;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPixLocation()
+    {
+        return $this->pixLocation;
+    }
+
+    /**
+     * @param mixed $pixLocation
+     * @return Detalhe
+     */
+    public function setPixLocation($pixLocation)
+    {
+        $this->pixLocation = $pixLocation;
+
+        return $this;
+    }
+
+    /**
+     * @param $nome
+     * @param $cidade
+     * @param bool $force
+     * @return string|null
+     * @throws ValidationException
+     */
+    public function gerarPixCopiaECola($nome, $cidade, $force = false)
+    {
+        if ($this->getPixQrCode() && ! $force) {
+            return $this->getPixQrCode();
+        }
+
+        if ($this->getPixLocation() && $this->getValor() && $this->getID()) {
+            $this->setPixQrCode(Util::gerarPixCopiaECola($this->getPixLocation(), $this->getValor(), $this->getID(), new Pessoa(['nome' => Util::normalizeChars($nome), 'cidade' => Util::normalizeChars($cidade)])));
+        }
+
+        return $this->getPixQrCode();
     }
 }

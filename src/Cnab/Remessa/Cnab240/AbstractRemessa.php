@@ -1,22 +1,24 @@
 <?php
+
 namespace Eduardokum\LaravelBoleto\Cnab\Remessa\Cnab240;
 
-use Eduardokum\LaravelBoleto\Cnab\Remessa\AbstractRemessa as AbstractRemessaGeneric;
 use ForceUTF8\Encoding;
+use Eduardokum\LaravelBoleto\Exception\ValidationException;
+use Eduardokum\LaravelBoleto\Cnab\Remessa\AbstractRemessa as AbstractRemessaGeneric;
 
 abstract class AbstractRemessa extends AbstractRemessaGeneric
 {
     protected $tamanho_linha = 240;
 
     /**
-     * Caracter de fim de linha
+     * Caractere de fim de linha
      *
      * @var string
      */
     protected $fimLinha = "\r\n";
 
     /**
-     * Caracter de fim de arquivo
+     * Caractere de fim de arquivo
      *
      * @var null
      */
@@ -28,11 +30,11 @@ abstract class AbstractRemessa extends AbstractRemessaGeneric
      * @var array
      */
     protected $aRegistros = [
-        self::HEADER => [],
-        self::HEADER_LOTE => [],
-        self::DETALHE => [],
+        self::HEADER       => [],
+        self::HEADER_LOTE  => [],
+        self::DETALHE      => [],
         self::TRAILER_LOTE => [],
-        self::TRAILER => [],
+        self::TRAILER      => [],
     ];
 
     /**
@@ -46,7 +48,6 @@ abstract class AbstractRemessa extends AbstractRemessaGeneric
      * @return mixed
      */
     abstract protected function headerLote();
-
 
     /**
      * Função que gera o trailer (footer) do arquivo.
@@ -81,7 +82,9 @@ abstract class AbstractRemessa extends AbstractRemessaGeneric
     protected function iniciaHeader()
     {
         $this->aRegistros[self::HEADER] = array_fill(0, $this->tamanho_linha, ' ');
+        $this->tamanhos_linha[self::HEADER] = $this->tamanho_linha;
         $this->atual = &$this->aRegistros[self::HEADER];
+        $this->tamanho_atual = &$this->tamanhos_linha[self::HEADER];
     }
 
     /**
@@ -91,7 +94,9 @@ abstract class AbstractRemessa extends AbstractRemessaGeneric
     {
         $this->iRegistrosLote = 0;
         $this->aRegistros[self::HEADER_LOTE] = array_fill(0, $this->tamanho_linha, ' ');
+        $this->tamanhos_linha[self::HEADER_LOTE] = $this->tamanho_linha;
         $this->atual = &$this->aRegistros[self::HEADER_LOTE];
+        $this->tamanho_atual = &$this->tamanhos_linha[self::HEADER_LOTE];
     }
 
     /**
@@ -100,7 +105,9 @@ abstract class AbstractRemessa extends AbstractRemessaGeneric
     protected function iniciaTrailerLote()
     {
         $this->aRegistros[self::TRAILER_LOTE] = array_fill(0, $this->tamanho_linha, ' ');
+        $this->tamanhos_linha[self::TRAILER_LOTE] = $this->tamanho_linha;
         $this->atual = &$this->aRegistros[self::TRAILER_LOTE];
+        $this->tamanho_atual = &$this->tamanhos_linha[self::TRAILER_LOTE];
     }
 
     /**
@@ -109,7 +116,9 @@ abstract class AbstractRemessa extends AbstractRemessaGeneric
     protected function iniciaTrailer()
     {
         $this->aRegistros[self::TRAILER] = array_fill(0, $this->tamanho_linha, ' ');
+        $this->tamanhos_linha[self::TRAILER] = $this->tamanho_linha;
         $this->atual = &$this->aRegistros[self::TRAILER];
+        $this->tamanho_atual = &$this->tamanhos_linha[self::TRAILER];
     }
 
     /**
@@ -120,7 +129,9 @@ abstract class AbstractRemessa extends AbstractRemessaGeneric
         $this->iRegistros++;
         $this->iRegistrosLote++;
         $this->aRegistros[self::DETALHE][$this->iRegistros] = array_fill(0, $this->tamanho_linha, ' ');
+        $this->tamanhos_linha[self::DETALHE][$this->iRegistros] = $this->tamanho_linha;
         $this->atual = &$this->aRegistros[self::DETALHE][$this->iRegistros];
+        $this->tamanho_atual = &$this->tamanhos_linha[self::DETALHE][$this->iRegistros];
     }
 
     /**
@@ -147,17 +158,17 @@ abstract class AbstractRemessa extends AbstractRemessaGeneric
      * Gera o arquivo, retorna a string.
      *
      * @return string
-     * @throws \Exception
+     * @throws ValidationException
      */
     public function gerar()
     {
-        if (!$this->isValid($messages)) {
-            throw new \Exception('Campos requeridos pelo banco, aparentam estar ausentes ' . $messages);
+        if (! $this->isValid($messages)) {
+            throw new ValidationException('Campos requeridos pelo banco, aparentam estar ausentes ' . $messages);
         }
 
         $stringRemessa = '';
         if ($this->iRegistros < 1) {
-            throw new \Exception('Nenhuma linha detalhe foi adicionada');
+            throw new ValidationException('Nenhuma linha detalhe foi adicionada');
         }
 
         $this->header();
@@ -166,7 +177,7 @@ abstract class AbstractRemessa extends AbstractRemessaGeneric
         $this->headerLote();
         $stringRemessa .= $this->valida($this->getHeaderLote()) . $this->fimLinha;
 
-        foreach ($this->getDetalhes() as $i => $detalhe) {
+        foreach ($this->getDetalhes() as $detalhe) {
             $stringRemessa .= $this->valida($detalhe) . $this->fimLinha;
         }
 
