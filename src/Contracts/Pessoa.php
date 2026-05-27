@@ -35,4 +35,6 @@ interface Pessoa
 
     public function setDda($dda);
     public function toArray();
+
+    public function setTipo($tipo);
 }

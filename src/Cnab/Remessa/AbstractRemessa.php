@@ -136,12 +136,6 @@ abstract class AbstractRemessa
     protected $contaDv;
 
     /**
-     * Dígito da conta
-     *
-     * @var int
-     */
-    protected $agenciaDv;
-    /**
      * Carteira de cobrança.
      *
      * @var
@@ -384,30 +378,6 @@ abstract class AbstractRemessa
     public function getContaDv()
     {
         return $this->contaDv;
-    }
-
-    /**
-     * Define a agência
-     *
-     * @param int $agenciaDv
-     *
-     * @return AbstractRemessa
-     */
-    public function setAgenciaDv($agenciaDv)
-    {
-        $this->agenciaDv = (string) $agenciaDv;
-
-        return $this;
-    }
-
-    /**
-     * Retorna a agência
-     *
-     * @return int
-     */
-    public function getAgenciaDv()
-    {
-        return $this->agenciaDv;
     }
 
     /**
