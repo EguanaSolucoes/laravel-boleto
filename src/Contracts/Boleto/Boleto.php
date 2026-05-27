@@ -26,7 +26,6 @@ interface Boleto
     const COD_BANCO_BV = '655';
     const COD_BANCO_SICREDI = '748';
     const COD_BANCO_CITIBANK = '745';
-    const COD_BANCO_BTG = '208';
     const COD_BANCO_BANRISUL = '041';
     const COD_BANCO_BANCOOB = '756';
     const COD_BANCO_BNB = '004';
@@ -145,10 +144,6 @@ interface Boleto
      */
     public function getDataDocumento();
 
-    /**
-     * @return Carbon
-     */
-    public function getDataVencimentoApos();
 
     /**
      * @return mixed
