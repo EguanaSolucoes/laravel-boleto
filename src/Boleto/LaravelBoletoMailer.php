@@ -10,6 +10,12 @@ use Psr\Container\ContainerExceptionInterface;
 use Eduardokum\LaravelMailAutoEmbed\Listeners\SymfonyEmbedImages;
 use Eduardokum\LaravelMailAutoEmbed\Contracts\Listeners\EmbedImages;
 
+/**
+ * Só é instanciada por Boleto\Mail::makeMailer() -- ver aviso lá sobre o
+ * fluxo de envio não ter sido validado no Laravel 5.1. Esta classe em si
+ * carrega sem problema (isLaravel9Plus() é false aqui, então o branch
+ * Symfony nunca roda), mas não está amarrada a nenhum ponto do SigetPlus.
+ */
 class LaravelBoletoMailer extends Mailer
 {
     /**

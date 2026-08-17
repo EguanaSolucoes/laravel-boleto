@@ -28,14 +28,24 @@ class Inter extends AbstractWebhook
             $boleto->setCodigoBarras(Arr::get($item, 'codigoBarras'));
             $boleto->setLinhaDigitavel(Arr::get($item, 'linhaDigitavel'));
             $boleto->setMotivo(Arr::get($item, 'motivoCancelamento'));
-            $boleto->setOcorrenciaTipo(
-                match (Arr::get($item, 'situacao')) {
-                    'A_RECEBER' => Boleto::OCORRENCIA_ENTRADA,
-                    'PAGO', 'MARCADO_RECEBIDO', 'RECEBIDO' => Boleto::OCORRENCIA_LIQUIDADA,
-                    'CANCELADO', 'EXPIRADO' => Boleto::OCORRENCIA_BAIXADA,
-                    default => Boleto::OCORRENCIA_OUTROS,
-                }
-            );
+            switch (Arr::get($item, 'situacao')) {
+                case 'A_RECEBER':
+                    $ocorrenciaTipo = Boleto::OCORRENCIA_ENTRADA;
+                    break;
+                case 'PAGO':
+                case 'MARCADO_RECEBIDO':
+                case 'RECEBIDO':
+                    $ocorrenciaTipo = Boleto::OCORRENCIA_LIQUIDADA;
+                    break;
+                case 'CANCELADO':
+                case 'EXPIRADO':
+                    $ocorrenciaTipo = Boleto::OCORRENCIA_BAIXADA;
+                    break;
+                default:
+                    $ocorrenciaTipo = Boleto::OCORRENCIA_OUTROS;
+                    break;
+            }
+            $boleto->setOcorrenciaTipo($ocorrenciaTipo);
             $boleto->setOcorrenciaOrigem(
                 Arr::get($item, 'origemRecebimento', 'BOLETO') == 'PIX' || ! is_null(Arr::get($item, 'txid'))
                     ? Boleto::OCORRENCIA_ORIGEM_PIX

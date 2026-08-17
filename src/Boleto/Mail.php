@@ -8,7 +8,6 @@ use Swift_SmtpTransport;
 use Illuminate\Support\Arr;
 use Illuminate\Mail\Message;
 use Illuminate\Config\Repository;
-use JetBrains\PhpStorm\ArrayShape;
 use Eduardokum\LaravelBoleto\Blade;
 use Illuminate\Container\Container;
 use Symfony\Component\Mailer\Transport\Dsn;
@@ -22,6 +21,15 @@ use Eduardokum\LaravelMailAutoEmbed\Listeners\SwiftEmbedImages;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransportFactory;
 use Eduardokum\LaravelMailAutoEmbed\Contracts\Listeners\EmbedImages;
 
+/**
+ * NAO USAR nesta versao do Laravel (5.1 / SwiftMailer). makeMailer() mistura
+ * a API do Symfony Mailer (Dsn/EsmtpTransportFactory, usada pelo Laravel 9+)
+ * com SwiftMailer no mesmo fluxo; symfony/mailer nao esta instalado aqui, e
+ * o branch isLaravel9Plus()===false nunca foi validado contra o Mail::html()
+ * deste projeto. Nao esta amarrado a nenhum ponto do SigetPlus hoje -- so
+ * corrigir se essa feature de envio de boleto por e-mail via lib for
+ * realmente adotada.
+ */
 class Mail
 {
     /**
@@ -85,24 +93,16 @@ class Mail
     }
 
     /**
-     * @return array
+     * @return array{address: string, name: string}
      */
-    #[ArrayShape([
-        'address' => 'string',
-        'name'    => 'string',
-    ])]
     private function getTo()
     {
         return $this->to;
     }
 
     /**
-     * @return array
+     * @return array{address: string, name: string}
      */
-    #[ArrayShape([
-        'address' => 'string',
-        'name'    => 'string',
-    ])]
     private function getFrom()
     {
         return $this->from;
