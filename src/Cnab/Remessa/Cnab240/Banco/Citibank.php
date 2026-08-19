@@ -373,12 +373,12 @@ class Citibank extends AbstractRemessa implements RemessaContract
         $this->add(72, 72, '0');
         $this->add(73, 73, '0');
         $this->add(74, 103, Util::formatCnab('X', $this->getBeneficiario()->getNome(), 30));
-        $this->add(104, 143, 'Cobrança');
+        $this->add(104, 143, Util::formatCnab('X', 'COBRANCA', 40));
         $this->add(144, 183, '');
         $this->add(184, 191, Util::formatCnab('9', $this->getIdremessa(), 8));
         $this->add(192, 199, $this->getDataRemessa('dmY'));
         $this->add(200, 207, '00000000');
-        $this->add(208, 241, '');
+        $this->add(208, 240, '');
 
         return $this;
     }
