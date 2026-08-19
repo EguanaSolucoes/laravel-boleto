@@ -1,4 +1,5 @@
 <?php
+
 namespace Eduardokum\LaravelBoleto\Boleto\Banco;
 
 use Eduardokum\LaravelBoleto\Boleto\AbstractBoleto;
@@ -31,7 +32,7 @@ class Citibank  extends AbstractBoleto implements BoletoContract
      *
      * @var array
      */
-    protected $carteiras = ['100', '180'];
+    protected $carteiras = ['100', '112', '180'];
     /**
      * Trata-se de código utilizado para identificar mensagens especificas ao cedente, sendo
      * que o mesmo consta no cadastro do Banco, quando não houver código cadastrado preencher
@@ -189,7 +190,8 @@ class Citibank  extends AbstractBoleto implements BoletoContract
      *
      * @return array
      */
-    public static function parseCampoLivre($campoLivre) {
+    public static function parseCampoLivre($campoLivre)
+    {
         return [
             'convenio' => null,
             'agencia' => null,
@@ -210,7 +212,8 @@ class Citibank  extends AbstractBoleto implements BoletoContract
      * confundido com o número da conta corrente, pois são códigos diferentes.
      * @return string
      */
-    public function getAgenciaCodigoBeneficiario(){
+    public function getAgenciaCodigoBeneficiario()
+    {
         return $this->getAgencia() . ' / ' . $this->getCodigoCliente();
     }
 
