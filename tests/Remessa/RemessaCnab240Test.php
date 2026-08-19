@@ -2,10 +2,11 @@
 
 namespace Eduardokum\LaravelBoleto\Tests\Remessa;
 
-use Eduardokum\LaravelBoleto\Pessoa;
-use Eduardokum\LaravelBoleto\Tests\TestCase;
 use Eduardokum\LaravelBoleto\Boleto\Banco as Boleto;
 use Eduardokum\LaravelBoleto\Cnab\Remessa\Cnab240\Banco as Remessa;
+use Eduardokum\LaravelBoleto\Pessoa;
+use Eduardokum\LaravelBoleto\Tests\TestCase;
+use Eduardokum\LaravelBoleto\Util;
 
 class RemessaCnab240Test extends TestCase
 {
@@ -136,5 +137,55 @@ class RemessaCnab240Test extends TestCase
 
         $this->assertFileExists($file);
         $this->assertEquals($file, $file2);
+    }
+
+    public function testRemessaCitibankCnab240()
+    {
+        $boleto = new Boleto\Citibank([
+            'logo' => realpath(__DIR__ . '/../logos/') . DIRECTORY_SEPARATOR . '033.png',
+            'dataVencimento' => new \Carbon\Carbon(),
+            'valor' => 100,
+            'multa' => false,
+            'juros' => false,
+            'numero' => 1,
+            'numeroDocumento' => 1,
+            'pagador' => self::$pagador,
+            'beneficiario' => self::$beneficiario,
+            'carteira' => '100',
+            'convenio' => 123456,
+            'agencia' => '1111',
+            'conta' => '99999999',
+            'aceite' => 'A',
+            'especieDoc' => 'DMI',
+        ]);
+
+        $remessa = new Remessa\Citibank([
+            'agencia' => '1111',
+            'carteira' => 1,
+            'conta' => '99999999',
+            'convenio' => 123456,
+            'idremessa' => 1,
+            'beneficiario' => self::$beneficiario,
+        ]);
+        $remessa->addBoleto($boleto);
+
+        $file = implode(DIRECTORY_SEPARATOR, [
+            __DIR__,
+            'files',
+            'cnab240',
+            'citibank.txt'
+        ]);
+
+        $file2 = $remessa->save($file);
+
+        $this->assertFileExists($file);
+        $this->assertEquals($file, $file2);
+
+        $linhas = explode("\r\n", $remessa->gerar());
+        $headerLote = $linhas[1];
+        $this->assertEquals(240, mb_strlen($headerLote));
+        $this->assertEquals(Util::formatCnab('X', 'COBRANCA', 40), mb_substr($headerLote, 103, 40));
+        $this->assertStringNotContainsString('Ç', $headerLote);
+        $this->assertStringNotContainsString('ç', $headerLote);
     }
 }
