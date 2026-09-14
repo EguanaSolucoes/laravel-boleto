@@ -248,7 +248,23 @@ class CalculoDV
 
     public static function btgNossoNumero($carteira, $numero_boleto)
     {
-        return Util::modulo11(Util::numberFormatGeral($numero_boleto, 11), 2, 7, 1);
+        $n = Util::numberFormatGeral($carteira, 2) . Util::numberFormatGeral($numero_boleto, 11);
+        $sum = 0;
+        $factor = 2;
+        for ($i = strlen($n) - 1; $i >= 0; $i--) {
+            $sum += ((int) $n[$i]) * $factor;
+            $factor = ($factor == 6) ? 2 : $factor + 1;
+        }
+        $resto = $sum % 11;
+        $dv = 11 - $resto;
+        if ($dv == 11) {
+            return 0;
+        }
+        if ($dv == 10) {
+            return "P";
+        }
+
+        return $dv;
     }
 
     public static function itauNossoNumero($agencia, $conta, $carteira, $numero_boleto)
