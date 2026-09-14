@@ -75,7 +75,9 @@ class Btg extends AbstractBoleto implements BoletoContract
      */
     protected function gerarNossoNumero()
     {
-        return Util::numberFormatGeral($this->getNumero(), 11) . CalculoDV::btgNossoNumero($this->getCarteira(), $this->getNumero());
+        return Util::numberFormatGeral($this->getCarteira(), 2)
+            . Util::numberFormatGeral($this->getNumero(), 11)
+            . CalculoDV::btgNossoNumero($this->getCarteira(), $this->getNumero());
     }
 
     /**
@@ -101,7 +103,7 @@ class Btg extends AbstractBoleto implements BoletoContract
 
         $campoLivre = Util::numberFormatGeral($this->getAgencia(), 4);
         $campoLivre .= Util::numberFormatGeral($this->getCarteira(), 2);
-        $campoLivre .= Util::numberFormatGeral(substr($this->getNossoNumero(), -11), 11);
+        $campoLivre .= Util::numberFormatGeral($this->getNumero(), 11);
         $campoLivre .= Util::numberFormatGeral($this->getConta(), 7);
         $campoLivre .= '0';
 
@@ -120,14 +122,13 @@ class Btg extends AbstractBoleto implements BoletoContract
         return [
             'convenio'        => null,
             'agenciaDv'       => null,
-            'codigoCliente'   => substr($campoLivre, 0, 12),
-            'carteira'        => substr($campoLivre, 22, 2),
-            'nossoNumero'     => substr($campoLivre, 12, 10),
-            'nossoNumeroDv'   => null,
-            'nossoNumeroFull' => substr($campoLivre, 12, 10),
-            'agencia'         => null,
-            'contaCorrente'   => null,
             'contaCorrenteDv' => null,
+            'agencia'         => substr($campoLivre, 0, 4),
+            'carteira'        => substr($campoLivre, 4, 2),
+            'nossoNumero'     => substr($campoLivre, 6, 11),
+            'nossoNumeroDv'   => null,
+            'nossoNumeroFull' => substr($campoLivre, 4, 13),
+            'contaCorrente'   => substr($campoLivre, 17, 7),
         ];
     }
 

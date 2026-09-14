@@ -194,4 +194,52 @@ class RemessaCnab240Test extends TestCase
         $this->assertStringNotContainsString('Ç', $headerLote);
         $this->assertStringNotContainsString('ç', $headerLote);
     }
+
+    public function testRemessaBtgCnab240()
+    {
+        $boleto = new Boleto\Btg([
+            'logo' => realpath(__DIR__ . '/../logos/') . DIRECTORY_SEPARATOR . '208.png',
+            'dataVencimento' => new \Carbon\Carbon(),
+            'valor' => 1500,
+            'multa' => false,
+            'juros' => false,
+            'numero' => 109617746,
+            'numeroDocumento' => 109617746,
+            'pagador' => self::$pagador,
+            'beneficiario' => self::$beneficiario,
+            'carteira' => 1,
+            'agencia' => '0001',
+            'conta' => '1234567',
+            'aceite' => 'N',
+            'especieDoc' => 'DM',
+        ]);
+
+        $remessa = new Remessa\Btg([
+            'agencia' => '0001',
+            'carteira' => 1,
+            'conta' => '1234567',
+            'codigoCliente' => '123456789012',
+            'idremessa' => 1,
+            'beneficiario' => self::$beneficiario,
+        ]);
+        $remessa->addBoleto($boleto);
+
+        $file = implode(DIRECTORY_SEPARATOR, [
+            __DIR__,
+            'files',
+            'cnab240',
+            'btg.txt'
+        ]);
+
+        $file2 = $remessa->save($file);
+
+        $this->assertFileExists($file);
+        $this->assertEquals($file, $file2);
+
+        $linhas = explode("\r\n", $remessa->gerar());
+        $this->assertGreaterThanOrEqual(5, count($linhas));
+        $segmentoP = $linhas[2];
+        $this->assertEquals(240, mb_strlen($segmentoP));
+        $this->assertEquals('01001096177463', trim(mb_substr($segmentoP, 37, 20)));
+    }
 }
