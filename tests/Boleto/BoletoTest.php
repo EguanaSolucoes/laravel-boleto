@@ -506,6 +506,22 @@ class BoletoTest extends TestCase
             ]
         );
         $this->assertEquals('01001096177463', $boleto->getNossoNumero());
+        $this->assertEquals('01001096178707', (new Boleto\Btg([
+            'numero' => 109617870,
+            'carteira' => 1,
+            'dataVencimento' => new \Carbon\Carbon('2026-09-20'),
+            'valor' => 1500,
+            'pagador' => self::$pagador,
+            'beneficiario' => self::$beneficiario,
+        ]))->getNossoNumero());
+        $this->assertEquals('01001096177455', (new Boleto\Btg([
+            'numero' => 109617745,
+            'carteira' => 1,
+            'dataVencimento' => new \Carbon\Carbon('2026-09-20'),
+            'valor' => 1500,
+            'pagador' => self::$pagador,
+            'beneficiario' => self::$beneficiario,
+        ]))->getNossoNumero());
         $this->assertEquals('0100109617746-3', $boleto->getNossoNumeroBoleto());
         $this->assertInternalType('array', $boleto->toArray());
         $this->assertNotNull($boleto->renderHTML());
