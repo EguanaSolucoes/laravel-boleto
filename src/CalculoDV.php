@@ -374,12 +374,37 @@ class CalculoDV
 
     public static function btgNossoNumero($carteira, $numero_boleto)
     {
-        if (strlen($numero_boleto) < 11) {
-            $numero_boleto = Util::numberFormatGeral($numero_boleto, 11);
-        }
-        $n = '0' . Util::numberFormatGeral($carteira, 2) . $numero_boleto;
+        $n = Util::numberFormatGeral($carteira, 2) . Util::numberFormatGeral($numero_boleto, 11);
+        $lastDigit = substr($n, -1);
 
-        return Util::modulo11($n, 2, 7, 0, 'P');
+        if ($lastDigit === '0') {
+            $prefix = substr($n, 0, -1);
+            $decrementedPrefix = str_pad(bcsub($prefix, '1'), strlen($prefix), '0', STR_PAD_LEFT);
+            $sum = 20;
+            $factor = 3;
+            for ($i = strlen($decrementedPrefix) - 1; $i >= 0; $i--) {
+                $sum += ((int) $decrementedPrefix[$i]) * $factor;
+                $factor = ($factor == 6) ? 2 : $factor + 1;
+            }
+        } else {
+            $sum = 0;
+            $factor = 2;
+            for ($i = strlen($n) - 1; $i >= 0; $i--) {
+                $sum += ((int) $n[$i]) * $factor;
+                $factor = ($factor == 6) ? 2 : $factor + 1;
+            }
+        }
+
+        $resto = $sum % 11;
+        $dv = 11 - $resto;
+        if ($dv == 11) {
+            return 0;
+        }
+        if ($dv == 10) {
+            return 'P';
+        }
+
+        return $dv;
     }
 
     public static function btgAgencia($agencia)
