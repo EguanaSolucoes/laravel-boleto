@@ -483,6 +483,36 @@ class BoletoTest extends TestCase
         $this->assertNotNull($boleto->renderPDF());
     }
 
+        public function testBoletoBasa()
+    {
+        $boleto = new Boleto\Basa(
+            [
+                'dataVencimento'  => new \Carbon\Carbon('2008-07-30'),
+                'valor'           => 4539.00,
+                'numero'          => 9604832,
+                'numeroDocumento' => 12345,
+                'pagador'         => self::$pagador,
+                'beneficiario'    => self::$beneficiario,
+                'carteira'        => '1',
+                'agencia'         => '017',
+                'agenciaDv'       => '5',
+                'conta'           => '737320',
+                'contaDv'         => '0',
+                'convenio'        => '12345',
+                'aceite'          => 'N',
+                'especieDoc'      => 'DM',
+            ]
+        );
+
+        $this->assertEquals('003', $boleto->getCodigoBanco());
+        $this->assertEquals('9604832', $boleto->getNossoNumero());
+        $this->assertEquals('9604832', $boleto->getNossoNumeroBoleto());
+        $this->assertEquals('0175960483230070800000000', $boleto->getCampoLivre());
+        $this->assertEquals('00391394900004539000175960483230070800000000', $boleto->getCodigoBarras());
+        $this->assertEquals('00390.17595 60483.230078 08000.000003 1 39490000453900', $boleto->getLinhaDigitavel());
+        $this->assertInternalType('array', $boleto->toArray());
+    }
+
     public function testBoletoBtg()
     {
         $boleto = new Boleto\Btg(
