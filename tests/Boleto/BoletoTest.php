@@ -1037,4 +1037,35 @@ class BoletoTest extends TestCase
         $this->assertEquals('163', $boleto->getCarteira());
         $this->assertThat($boleto->toArray(), (new IsType(IsType::TYPE_ARRAY)));
     }
+
+    public function testBoletoCitibankCarteira163LinhaDigitavel()
+    {
+        $boleto = new Boleto\Citibank([
+            'logo'            => realpath(__DIR__ . '/../../logos/') . DIRECTORY_SEPARATOR . '033.png',
+            'dataVencimento'  => new \Carbon\Carbon('2026-10-25'),
+            'valor'           => 0.94,
+            'multa'           => false,
+            'juros'           => false,
+            'numero'          => '00096661002',
+            'numeroDocumento' => 1,
+            'pagador'         => self::$pagador,
+            'beneficiario'    => self::$beneficiario,
+            'carteira'        => '163',
+            'codigoCliente'   => '0430731017',
+            'agencia'         => '1111',
+            'conta'           => '99999999',
+            'aceite'          => 'A',
+            'especieDoc'      => 'DMI',
+        ]);
+
+        $this->assertEquals('000096661002', $boleto->getNossoNumero());
+        $this->assertEquals('00096661002', $boleto->getNossoNumeroBoleto());
+        $this->assertEquals('74593.16340 30731.017007 00966.610024 1 16100000000094', $boleto->getLinhaDigitavel());
+    }
+
+    public function testCalculoDVCitibankNossoNumero()
+    {
+        $this->assertEquals(7, \Eduardokum\LaravelBoleto\CalculoDV::citibankNossoNumero('66660000003'));
+        $this->assertEquals(0, \Eduardokum\LaravelBoleto\CalculoDV::citibankNossoNumero('00000000000'));
+    }
 }

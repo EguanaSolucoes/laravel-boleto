@@ -481,12 +481,26 @@ class CalculoDV
 
     /*
     |--------------------------------------------------------------------------
-    | 237 - Citibank
+    | 745 - Citibank
     |--------------------------------------------------------------------------
     */
     public static function citibankNossoNumero($nossoNumero)
     {
-        return Util::modulo11($nossoNumero);
+        $numero = Util::onlyNumbers($nossoNumero);
+        $peso = 2;
+        $soma = 0;
+        for ($i = strlen($numero) - 1; $i >= 0; $i--) {
+            $soma += ((int) $numero[$i]) * $peso;
+            $peso = ($peso == 9) ? 2 : $peso + 1;
+        }
+
+        $resto = $soma % 11;
+
+        if ($resto == 0 || $resto == 1) {
+            return 0;
+        }
+
+        return 11 - $resto;
     }
 
     /*
