@@ -109,8 +109,7 @@ class Citibank  extends AbstractBoleto implements BoletoContract
      */
     protected function gerarNossoNumero()
     {
-        return Util::numberFormatGeral($this->getNumero(), 11)
-            . CalculoDV::citibankNossoNumero($this->getNumero());
+        return Util::numberFormatGeral($this->getNumero(), 12);
     }
 
     /**
@@ -162,7 +161,12 @@ class Citibank  extends AbstractBoleto implements BoletoContract
      */
     public function getNossoNumeroBoleto()
     {
-        return substr_replace($this->getNossoNumero(), '-', -1, 0);
+        $numero = Util::onlyNumbers($this->getNumero());
+        if (strlen($numero) >= 12) {
+            return Util::numberFormatGeral($numero, 12);
+        }
+
+        return Util::numberFormatGeral($numero, 11);
     }
     /**
      * Método para gerar o código da posição de 20 a 44
