@@ -993,6 +993,7 @@ final class Util
             BoletoContract::COD_BANCO_BANRISUL => 'Banco\\Banrisul',
             BoletoContract::COD_BANCO_BANCOOB => 'Banco\\Bancoob',
             BoletoContract::COD_BANCO_BNB => 'Banco\\Bnb',
+            BoletoContract::COD_BANCO_BASA => 'Banco\\Basa',
             BoletoContract::COD_BANCO_CITIBANK => 'Banco\\Citibank',
         ];
 

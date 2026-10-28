@@ -242,4 +242,84 @@ class RemessaCnab240Test extends TestCase
         $this->assertEquals(240, mb_strlen($segmentoP));
         $this->assertEquals('01001096177463', trim(mb_substr($segmentoP, 37, 20)));
     }
+
+    public function testRemessaBasaCnab240()
+    {
+        $boleto = new Boleto\Basa([
+            'logo' => realpath(__DIR__ . '/../logos/') . DIRECTORY_SEPARATOR . '003.png',
+            'dataVencimento' => new \Carbon\Carbon('2026-12-31'),
+            'valor' => 100,
+            'multa' => 2.0,
+            'juros' => 1.0,
+            'numero' => 9604832,
+            'numeroDocumento' => 12345,
+            'pagador' => self::$pagador,
+            'beneficiario' => self::$beneficiario,
+            'carteira' => '1',
+            'convenio' => '12345',
+            'agencia' => '017',
+            'agenciaDv' => '5',
+            'conta' => '737320',
+            'contaDv' => '0',
+            'aceite' => 'N',
+            'especieDoc' => 'DM',
+        ]);
+
+        $remessa = new Remessa\Basa([
+            'agencia' => '017',
+            'agenciaDv' => '5',
+            'carteira' => '1',
+            'conta' => '737320',
+            'contaDv' => '0',
+            'convenio' => '12345',
+            'idremessa' => 1,
+            'beneficiario' => self::$beneficiario,
+        ]);
+        $remessa->addBoleto($boleto);
+
+        $file = implode(DIRECTORY_SEPARATOR, [
+            __DIR__,
+            'files',
+            'cnab240',
+            'basa.txt'
+        ]);
+
+        $file2 = $remessa->save($file);
+
+        $this->assertFileExists($file);
+        $this->assertEquals($file, $file2);
+
+        $linhas = explode("\r\n", $remessa->gerar());
+        $this->assertGreaterThanOrEqual(7, count($linhas));
+
+        // Header de Arquivo
+        $this->assertEquals(240, mb_strlen($linhas[0]));
+        $this->assertEquals('003', mb_substr($linhas[0], 0, 3));
+        $this->assertEquals('090', mb_substr($linhas[0], 163, 3));
+
+        // Header de Lote
+        $this->assertEquals(240, mb_strlen($linhas[1]));
+        $this->assertEquals('003', mb_substr($linhas[1], 0, 3));
+        $this->assertEquals('047', mb_substr($linhas[1], 13, 3));
+
+        // Segmento P
+        $this->assertEquals(240, mb_strlen($linhas[2]));
+        $this->assertEquals('P', mb_substr($linhas[2], 13, 1));
+
+        // Segmento Q
+        $this->assertEquals(240, mb_strlen($linhas[3]));
+        $this->assertEquals('Q', mb_substr($linhas[3], 13, 1));
+
+        // Segmento R
+        $this->assertEquals(240, mb_strlen($linhas[4]));
+        $this->assertEquals('R', mb_substr($linhas[4], 13, 1));
+
+        // Trailer Lote
+        $this->assertEquals(240, mb_strlen($linhas[5]));
+        $this->assertEquals('5', mb_substr($linhas[5], 7, 1));
+
+        // Trailer Arquivo
+        $this->assertEquals(240, mb_strlen($linhas[6]));
+        $this->assertEquals('9', mb_substr($linhas[6], 7, 1));
+    }
 }

@@ -35,4 +35,28 @@ class RetornoCnab240Test extends TestCase
         }
     }
 
+
+    public function testRetornoBasaCnab240()
+    {
+        $retorno = \Eduardokum\LaravelBoleto\Cnab\Retorno\Factory::make(__DIR__ . '/files/cnab240/basa.ret');
+        $retorno->processar();
+
+        $this->assertNotNull($retorno->getHeader());
+        $this->assertNotNull($retorno->getHeaderLote());
+        $this->assertNotNull($retorno->getDetalhes());
+        $this->assertNotNull($retorno->getTrailerLote());
+        $this->assertNotNull($retorno->getTrailer());
+
+        $this->assertEquals('BANCO DA AMAZONIA', $retorno->getBancoNome());
+        $this->assertEquals('003', $retorno->getCodigoBanco());
+
+        $this->assertInstanceOf(\Illuminate\Support\Collection::class, $retorno->getDetalhes());
+        $this->assertInstanceOf(\Eduardokum\LaravelBoleto\Cnab\Retorno\Cnab240\Detalhe::class, $retorno->getDetalhe(1));
+
+        foreach ($retorno->getDetalhes() as $detalhe) {
+            $this->assertInstanceOf(\Eduardokum\LaravelBoleto\Cnab\Retorno\Cnab240\Detalhe::class, $detalhe);
+            $this->assertArrayHasKey('numeroDocumento', $detalhe->toArray());
+            $this->assertEquals('06', $detalhe->getOcorrencia());
+        }
+    }
 }
