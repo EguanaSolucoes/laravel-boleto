@@ -1093,6 +1093,7 @@ final class Util
             BoletoContract::COD_BANCO_DAYCOVAL  => 'Banco\\Daycoval',
             BoletoContract::COD_BANCO_SISPRIME  => 'Banco\\Sisprime',
             BoletoContract::COD_BANCO_CITIBANK  => 'Banco\\Citibank',
+            BoletoContract::COD_BANCO_BASA      => 'Banco\\Basa',
         ];
 
         if (array_key_exists($banco, $aBancos)) {

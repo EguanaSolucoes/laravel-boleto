@@ -35,6 +35,7 @@ interface Boleto
     const COD_BANCO_PINE = '643';
     const COD_BANCO_DAYCOVAL = '707';
     const COD_BANCO_OURINVEST = '712';
+    const COD_BANCO_BASA = '003';
     const STATUS_REGISTRO = 1;
     const STATUS_ALTERACAO = 2;
     const STATUS_BAIXA = 3;

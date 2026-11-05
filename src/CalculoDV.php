@@ -26,6 +26,24 @@ class CalculoDV
 
     /*
     |--------------------------------------------------------------------------
+    | 003 - Banco da Amazônia
+    |--------------------------------------------------------------------------
+    | EXPERIMENTAL: regra ainda não validada com a documentação oficial do banco.
+    */
+    public static function basaNossoNumero($nossoNumero)
+    {
+        $resto = Util::modulo11($nossoNumero, 2, 9, 1);
+        if ($resto == 0) {
+            return '0';
+        }
+        if ($resto == 1) {
+            return 'X';
+        }
+        return 11 - $resto;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | 004 - Banco do Nordeste
     |--------------------------------------------------------------------------
     */
